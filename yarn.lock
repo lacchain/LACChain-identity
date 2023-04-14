@@ -5217,10 +5217,10 @@ node-notifier@^8.0.0:
     uuid "^8.3.0"
     which "^2.0.2"
 
-nodemailer-express-handlebars@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/nodemailer-express-handlebars/-/nodemailer-express-handlebars-5.0.0.tgz#5dca06b55a4bcc9a95e50ff65bac98aa8e93ba64"
-  integrity sha512-DMeoCr8kSyLjzXZR+wclDidPDcgy68mIiuSlDZeeDP4IQLJmRzXrlTv+3C2r+uYUnajN5vxqB8pTBdju6aH/yA==
+nodemailer-express-handlebars@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/nodemailer-express-handlebars/-/nodemailer-express-handlebars-6.0.0.tgz#44cbbbeb21c05b74dde8916b8790df196ac30a89"
+  integrity sha512-xo5nVCn2GDaE8o0ppOWVq0s3Tt5xLn+R2pDROQrZALKCoP6WsEOXrNGQwH/tYJ4vucWtWd+zdcHm734S6CSA7w==
   dependencies:
     express-handlebars "^6.0.0"
 
