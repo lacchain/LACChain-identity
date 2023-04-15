@@ -64,6 +64,7 @@
   },
   "dependencies": {
     "aws-sdk": "^2.1116.0",
+    "base-x": "^4.0.0",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.0",
     "class-transformer": "^0.5.1",
