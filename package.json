@@ -94,6 +94,8 @@
     "tsconfig-paths": "^3.14.1",
     "typedi": "^0.10.0",
     "typeorm": "^0.2.41",
-    "typeorm-seeding": "^1.6.1"
+    "typeorm-seeding": "^1.6.1",
+    "typescript-logging": "^2.1.0",
+    "typescript-logging-log4ts-style": "^2.1.0"
   }
 }

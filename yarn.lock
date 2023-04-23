@@ -7218,6 +7218,16 @@ typeorm@^0.2.41:
     yargs "^17.0.1"
     zen-observable-ts "^1.0.0"
 
+typescript-logging-log4ts-style@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/typescript-logging-log4ts-style/-/typescript-logging-log4ts-style-2.1.0.tgz#839e121f5f3b37f00f26a2a2b3db4ecb5d125089"
+  integrity sha512-yXvvi4MbDlvYel3c2/Z1kdf4PiiJ9rUe64iP+GOqrsSEwnCnWh78JLo7yYf7CNOEhaqZBAUa1P5GXoFxoGhTQQ==
+
+typescript-logging@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/typescript-logging/-/typescript-logging-2.1.0.tgz#7ecbed6274e9e301db54e993ac470e085bf76b52"
+  integrity sha512-3xi7Z0fslj8eQIEkiJSEvt5x8I4YDpwp7bdUcN8JDWXJ0RGD6RKkHhOCKgKu4KQU+4X0rm9zyxTK6TQst2hvWw==
+
 typescript@^4.9.5:
   version "4.9.5"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"

@@ -1,3 +1,4 @@
+import { log4TSProvider } from './src/config/LogConfig';
 import { ConnectionOptions } from 'typeorm';
 import {
   TYPEORM_HOST,
@@ -13,7 +14,9 @@ import {
   IS_INDEPENDENT_SERVICE
 } from '@config';
 
-import { Secp256k1 } from 'lacpass-key-manager';
+import { Secp256k1, Secp256k1DbService } from 'lacpass-key-manager';
+
+const log = log4TSProvider.getLogger('ormConfig');
 
 const config: ConnectionOptions = {
   type: TYPEORM_TYPE as 'mysql' | 'postgres' | 'mongodb',
@@ -42,7 +45,12 @@ const config: ConnectionOptions = {
 };
 
 if (IS_INDEPENDENT_SERVICE !== 'true') {
+  log.info('Importing entities from external components');
   config.entities?.push(Secp256k1);
+  // eslint-disable-next-line max-len
+  typeof Secp256k1DbService; // validates this service exist as of the key-manager version being installed
+} else {
+  log.info('Initializing with local entities');
 }
 
 export = config;
