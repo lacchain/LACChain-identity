@@ -1,5 +1,15 @@
+import {
+  DEFAULT_DOMAIN_NAME,
+  DEFAULT_REGISTRY,
+  DOMAIN_NAMES,
+  REGISTRY
+} from '@constants/networks/didRegistry';
 import { config } from 'dotenv';
+import { ethers } from 'ethers';
+import { log4TSProvider } from './LogConfig';
 config({ path: `.env.${process.env.ENV || 'dev'}` });
+
+const log = log4TSProvider.getLogger('config');
 
 // If .env wasn't provided then exit
 if (!process.env.PORT) {
@@ -7,11 +17,75 @@ if (!process.env.PORT) {
   process.exit(1);
 }
 
+if (!process.env.CHAIN_ID) {
+  console.error('==> Please set CHAIN_ID in your .env');
+  process.exit(1);
+}
+
+export const CHAIN_ID = process.env.CHAIN_ID;
+
 export const PRODUCTION_ENV = process.env.ENV === 'prod';
 export const DEV_ENV = process.env.ENV === 'dev';
 export const TESTING_ENV = process.env.ENV === 'test';
 export const CI_ENV = process.env.ENV === 'ci';
 export const JWT_SECRET_DEFAULT = 'some-secret-string-default';
+
+const resolveDidRegistryAddress = (): string => {
+  const didRegistryAddress = process.env.DID_REGISTRY_ADDRESS;
+  if (didRegistryAddress) {
+    if (!ethers.isAddress(didRegistryAddress)) {
+      log.error(
+        'Specified DID_REGISTRY_ADDRESS',
+        DID_REGISTRY_ADDRESS,
+        'is not a valid address ... exiting'
+      );
+      process.exit(1); // exiting since this is a critical error
+    }
+    if (
+      didRegistryAddress &&
+      !REGISTRY.get(CHAIN_ID)?.find(el => el === didRegistryAddress)
+    ) {
+      log.info('Unknown specified did registry address ', didRegistryAddress);
+    }
+    log.info('Returning custom did registry address', didRegistryAddress);
+    return didRegistryAddress;
+  }
+  const wellKnownRegistryAddress = DEFAULT_REGISTRY.get(CHAIN_ID);
+  if (!wellKnownRegistryAddress) {
+    log.error('Could not find well-known registry address for chain', CHAIN_ID);
+    process.exit(1); // exiting since this is a critical error
+  }
+  log.info('Returning default registry address', wellKnownRegistryAddress);
+  return wellKnownRegistryAddress;
+};
+
+const resolveDidDomainName = (): string => {
+  const domainName = process.env.DOMAIN_NAME;
+  if (domainName) {
+    const resolvedHostnames = DOMAIN_NAMES;
+    if (!resolvedHostnames?.find(name => name === domainName)) {
+      log.error(
+        'Specified domain ',
+        domainName,
+        ' does not match any well known domain for chain Id',
+        CHAIN_ID
+      );
+      process.exit(1);
+    }
+    log.info('Returning domain name', domainName);
+    return domainName;
+  }
+  const defaultDomainName = DEFAULT_DOMAIN_NAME;
+  if (!defaultDomainName) {
+    log.error('Could not find default domain name for chain', CHAIN_ID);
+    process.exit(1); // exiting since this is a critical error
+  }
+  log.info('Returning default domain name', defaultDomainName);
+  return defaultDomainName;
+};
+
+export const DID_REGISTRY_ADDRESS = resolveDidRegistryAddress();
+export const DOMAIN_NAME = resolveDidDomainName();
 
 export const {
   ENV,
@@ -42,5 +116,5 @@ export const {
   SENDGRID_API_KEY,
   KEY_MANAGER_BASE_URL,
   SECP256K1_KEY,
-  IS_INDEPENDENT_SERVICE
+  IS_DEPENDENT_SERVICE
 } = process.env;

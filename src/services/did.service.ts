@@ -2,6 +2,9 @@ import { Service } from 'typedi';
 import { getRepository } from 'typeorm';
 import { Did } from '@entities/did.entity';
 import { KeyManagerService } from './external/key-manager.service';
+import { EntityMapper } from '@clients/mapper/entityMapper.service';
+import { CHAIN_ID, DID_REGISTRY_ADDRESS, DOMAIN_NAME } from '@config';
+import { log4TSProvider } from 'src/config/LogConfig';
 
 @Service()
 export class DidService {
@@ -13,22 +16,29 @@ export class DidService {
 
   private readonly didEncodingVersion = '0001'; // constant for encoding
   // eslint-disable-next-line max-len
-  private readonly didType = '0001'; // lac -> make a table for the different kinds of supported did types
-  private readonly chainId = '0x9e55c';
-  private readonly lacchainHostname = 'lacchain.id';
-  private readonly didLacWebIdentifier: string;
+  private readonly didType = '0001'; // constant
+  private readonly domainName: string;
+
+  private readonly chainId: string;
   private readonly didRegistryAddress: string;
+
+  private readonly didLacWebIdentifier: string;
+
+  log = log4TSProvider.getLogger('didService');
   constructor(private keyManagerService: KeyManagerService) {
-    this.didLacWebIdentifier = `did:web:${this.lacchainHostname}:`;
-    this.didRegistryAddress = '0xBeB1df7Fb80CA88226aE1DaDa169639E950f3D79';
+    this.chainId = CHAIN_ID;
+    this.didRegistryAddress = DID_REGISTRY_ADDRESS;
+    this.domainName = DOMAIN_NAME;
+    this.didLacWebIdentifier = `did:web:${this.domainName}:`;
   }
 
   show(id: string) {
     return this.didRepository.findOne(id);
   }
 
-  async createDidWebLac(did: Did) {
+  async createDidWebLac() {
     const key = await this.keyManagerService.createSecp256k1Key();
+    const did = EntityMapper.mapTo(Did, {});
     did.keyId = key.keyId;
     did.did =
       this.didLacWebIdentifier +

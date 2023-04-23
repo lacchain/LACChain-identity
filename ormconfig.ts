@@ -11,7 +11,7 @@ import {
   TYPEORM_MIGRATIONS_RUN,
   PRODUCTION_ENV,
   TYPEORM_TYPE,
-  IS_INDEPENDENT_SERVICE
+  IS_DEPENDENT_SERVICE
 } from '@config';
 
 import { Secp256k1, Secp256k1DbService } from 'lacpass-key-manager';
@@ -44,7 +44,7 @@ const config: ConnectionOptions = {
   }
 };
 
-if (IS_INDEPENDENT_SERVICE !== 'true') {
+if (IS_DEPENDENT_SERVICE !== 'true') {
   log.info('Importing entities from external components');
   config.entities?.push(Secp256k1);
   // eslint-disable-next-line max-len
