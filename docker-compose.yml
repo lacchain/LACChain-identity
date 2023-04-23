@@ -8,6 +8,11 @@ services:
       POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
     volumes:
       - ./docker_postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
+      - type: bind
+        source: ./pg-prod-db
+        target: /var/lib/postgresql/data
+        volume:
+          nocopy: true
     networks:
       - backend
   redis:
