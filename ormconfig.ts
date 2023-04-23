@@ -9,8 +9,11 @@ import {
   TYPEORM_LOGGING,
   TYPEORM_MIGRATIONS_RUN,
   PRODUCTION_ENV,
-  TYPEORM_TYPE
+  TYPEORM_TYPE,
+  IS_INDEPENDENT_SERVICE
 } from '@config';
+
+import { Secp256k1 } from 'lacpass-key-manager';
 
 const config: ConnectionOptions = {
   type: TYPEORM_TYPE as 'mysql' | 'postgres' | 'mongodb',
@@ -20,7 +23,7 @@ const config: ConnectionOptions = {
   database: TYPEORM_DATABASE,
   port: Number.parseInt(TYPEORM_PORT || '5432'),
   synchronize: TYPEORM_SYNCHRONIZE === 'true',
-  logging: TYPEORM_LOGGING === 'true',
+  logging: TYPEORM_LOGGING === 'true' ? ['error'] : false,
   entities: [
     PRODUCTION_ENV ? 'dist/src/entities/**/*.js' : 'src/entities/**/*.ts'
   ],
@@ -37,5 +40,9 @@ const config: ConnectionOptions = {
     entitiesDir: PRODUCTION_ENV ? 'dist/src/entities' : 'src/entities'
   }
 };
+
+if (IS_INDEPENDENT_SERVICE !== 'true') {
+  config.entities?.push(Secp256k1);
+}
 
 export = config;

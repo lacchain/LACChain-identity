@@ -2,9 +2,6 @@ import { Service } from 'typedi';
 import { getRepository } from 'typeorm';
 import { Did } from '@entities/did.entity';
 import { KeyManagerService } from './external/key-manager.service';
-import { InternalServerError } from 'routing-controllers';
-import { ErrorsMessages } from '@constants/errorMessages';
-import { ISecp256k1 } from 'src/interfaces/key/key.interface';
 
 @Service()
 export class DidService {
@@ -31,12 +28,7 @@ export class DidService {
   }
 
   async createDidWebLac(did: Did) {
-    const result = await this.keyManagerService.createSecp256k1Key();
-    if (result.status !== 200) {
-      console.log(await result.text());
-      throw new InternalServerError(ErrorsMessages.CREATE_KEY_ERROR);
-    }
-    const key: ISecp256k1 = await result.json();
+    const key = await this.keyManagerService.createSecp256k1Key();
     did.keyId = key.keyId;
     did.did =
       this.didLacWebIdentifier +
