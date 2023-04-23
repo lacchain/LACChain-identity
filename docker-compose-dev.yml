@@ -20,7 +20,7 @@ services:
   node-api-base:
     build:
       context: ./
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile.dev
     environment:
       PORT: "${PORT}"
       JWT_SECRET: "${JWT_SECRET}"
@@ -47,7 +47,9 @@ services:
       - postgres
       - redis
     volumes:
-      - ".env.prod:/app/.env.prod"
+      - "./src:/app/src"
+      - /src/node_modules
+      - ".env.dev:/app/.env.dev"
     networks:
       - backend
 networks:

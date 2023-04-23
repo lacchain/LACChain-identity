@@ -3,13 +3,13 @@ import fetch from 'node-fetch';
 import {
   IS_DEPENDENT_SERVICE,
   KEY_MANAGER_BASE_URL,
-  SECP256K1_KEY
+  SECP256K1_KEY,
+  log4TSProvider
 } from '@config';
 import { Secp256k1Service } from 'lacpass-key-manager';
 import { InternalServerError } from 'routing-controllers';
 import { ErrorsMessages } from '@constants/errorMessages';
 import { ISecp256k1 } from 'src/interfaces/key/key.interface';
-import { log4TSProvider } from 'src/config/LogConfig';
 @Service()
 export class KeyManagerService {
   public createSecp256k1Key: () => Promise<ISecp256k1>;

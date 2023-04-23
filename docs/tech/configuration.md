@@ -69,11 +69,28 @@ docker network create backend
 ```
 
 ```
-docker-compose --env-file .env.dev build
+docker-compose -f docker-compose-dev.yml --env-file .env.dev build
 ```
 
 ```
-docker-compose --env-file .env.dev up
+docker-compose -f docker-compose-dev.yml --env-file .env.dev up
+```
+
+
+### Testing Docker production images with docker-compose
+
+The following commands will build and run all you need to start working on the base, without any other installation requirements. Important: if you already have postgres running locally, you'll need to kill the service before run `docker-compose up`.
+
+```
+docker network create backend
+```
+
+```
+docker-compose -f docker-compose.yml --env-file .env.prod build
+```
+
+```
+docker-compose -f docker-compose.yml --env-file .env.prod up
 ```
 
 ### Deployment with Docker (only for production)

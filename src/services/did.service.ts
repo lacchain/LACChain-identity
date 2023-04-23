@@ -3,8 +3,12 @@ import { getRepository } from 'typeorm';
 import { Did } from '@entities/did.entity';
 import { KeyManagerService } from './external/key-manager.service';
 import { EntityMapper } from '@clients/mapper/entityMapper.service';
-import { CHAIN_ID, DID_REGISTRY_ADDRESS, DOMAIN_NAME } from '@config';
-import { log4TSProvider } from 'src/config/LogConfig';
+import {
+  CHAIN_ID,
+  DID_REGISTRY_ADDRESS,
+  DOMAIN_NAME,
+  log4TSProvider
+} from '@config';
 
 @Service()
 export class DidService {

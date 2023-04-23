@@ -6,8 +6,19 @@ import {
 } from '@constants/networks/didRegistry';
 import { config } from 'dotenv';
 import { ethers } from 'ethers';
-import { log4TSProvider } from './LogConfig';
+import { LogLevel } from 'typescript-logging';
+import { Log4TSProvider } from 'typescript-logging-log4ts-style';
+
 config({ path: `.env.${process.env.ENV || 'dev'}` });
+
+export const log4TSProvider = Log4TSProvider.createProvider('Log4Provider', {
+  level: LogLevel.Debug,
+  groups: [
+    {
+      expression: new RegExp('.+')
+    }
+  ]
+});
 
 const log = log4TSProvider.getLogger('config');
 

@@ -1,4 +1,3 @@
-import { log4TSProvider } from './src/config/LogConfig';
 import { ConnectionOptions } from 'typeorm';
 import {
   TYPEORM_HOST,
@@ -11,7 +10,8 @@ import {
   TYPEORM_MIGRATIONS_RUN,
   PRODUCTION_ENV,
   TYPEORM_TYPE,
-  IS_DEPENDENT_SERVICE
+  IS_DEPENDENT_SERVICE,
+  log4TSProvider
 } from '@config';
 
 import { Secp256k1, Secp256k1DbService } from 'lacpass-key-manager';
