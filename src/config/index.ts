@@ -3,7 +3,7 @@ import {
   DEFAULT_REGISTRY,
   DOMAIN_NAMES,
   REGISTRY
-} from '@constants/networks/didRegistry';
+} from '../constants/networks/didRegistry';
 import { config } from 'dotenv';
 import { ethers } from 'ethers';
 import { LogLevel } from 'typescript-logging';
@@ -28,12 +28,15 @@ if (!process.env.PORT) {
   process.exit(1);
 }
 
-if (!process.env.CHAIN_ID) {
-  console.error('==> Please set CHAIN_ID in your .env');
-  process.exit(1);
-}
+export const getChainId = (): string => {
+  if (!process.env.CHAIN_ID) {
+    console.error('==> Please set CHAIN_ID in your .env');
+    process.exit(1);
+  }
+  return process.env.CHAIN_ID;
+};
 
-export const CHAIN_ID = process.env.CHAIN_ID;
+export const CHAIN_ID = getChainId();
 
 export const PRODUCTION_ENV = process.env.ENV === 'prod';
 export const DEV_ENV = process.env.ENV === 'dev';
@@ -41,7 +44,7 @@ export const TESTING_ENV = process.env.ENV === 'test';
 export const CI_ENV = process.env.ENV === 'ci';
 export const JWT_SECRET_DEFAULT = 'some-secret-string-default';
 
-const resolveDidRegistryAddress = (): string => {
+export const resolveDidRegistryAddress = (): string => {
   const didRegistryAddress = process.env.DID_REGISTRY_ADDRESS;
   if (didRegistryAddress) {
     if (!ethers.isAddress(didRegistryAddress)) {
@@ -70,7 +73,7 @@ const resolveDidRegistryAddress = (): string => {
   return wellKnownRegistryAddress;
 };
 
-const resolveDidDomainName = (): string => {
+export const resolveDidDomainName = (): string => {
   const domainName = process.env.DOMAIN_NAME;
   if (domainName) {
     const resolvedHostnames = DOMAIN_NAMES;

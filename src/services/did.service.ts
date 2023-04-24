@@ -1,14 +1,14 @@
 import { Service } from 'typedi';
 import { getRepository } from 'typeorm';
-import { Did } from '@entities/did.entity';
+import { Did } from '../entities/did.entity';
 import { KeyManagerService } from './external/key-manager.service';
 import { EntityMapper } from '@clients/mapper/entityMapper.service';
 import {
-  CHAIN_ID,
-  DID_REGISTRY_ADDRESS,
-  DOMAIN_NAME,
-  log4TSProvider
-} from '@config';
+  getChainId,
+  log4TSProvider,
+  resolveDidDomainName,
+  resolveDidRegistryAddress
+} from '../config';
 import { DidService } from './interfaces/did.service';
 
 @Service()
@@ -30,10 +30,12 @@ export class DidServiceWebLac implements DidService {
   private readonly didLacWebIdentifier: string;
 
   log = log4TSProvider.getLogger('didService');
-  constructor(private keyManagerService: KeyManagerService) {
-    this.chainId = CHAIN_ID;
-    this.didRegistryAddress = DID_REGISTRY_ADDRESS;
-    this.domainName = DOMAIN_NAME;
+  private keyManagerService;
+  constructor() {
+    this.keyManagerService = new KeyManagerService();
+    this.chainId = getChainId();
+    this.didRegistryAddress = resolveDidRegistryAddress();
+    this.domainName = resolveDidDomainName();
     this.didLacWebIdentifier = `did:web:${this.domainName}:`;
   }
 
