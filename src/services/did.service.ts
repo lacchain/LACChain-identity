@@ -9,9 +9,10 @@ import {
   DOMAIN_NAME,
   log4TSProvider
 } from '@config';
+import { DidService } from './interfaces/did.service';
 
 @Service()
-export class DidService {
+export class DidServiceWebLac implements DidService {
   private readonly didRepository = getRepository<Did>(Did);
   private readonly base58 = require('base-x')(
     '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
@@ -40,7 +41,7 @@ export class DidService {
     return this.didRepository.findOne(id);
   }
 
-  async createDidWebLac() {
+  async createDid() {
     const key = await this.keyManagerService.createSecp256k1Key();
     const did = EntityMapper.mapTo(Did, {});
     did.keyId = key.keyId;
