@@ -36,6 +36,22 @@ export const getChainId = (): string => {
   return process.env.CHAIN_ID;
 };
 
+export const getRpcUrl = (): string => {
+  if (!process.env.NODE_RPC_URL) {
+    console.error('==> Please set RPC_URL in your .env');
+    process.exit(1);
+  }
+  return process.env.NODE_RPC_URL;
+};
+
+export const getNodeAddress = (): string => {
+  if (!process.env.NODE_ADDRESS) {
+    console.error('==> Please set NODE_ADDRESS in your .env');
+    process.exit(1);
+  }
+  return process.env.NODE_ADDRESS;
+};
+
 export const CHAIN_ID = getChainId();
 
 export const PRODUCTION_ENV = process.env.ENV === 'prod';
@@ -44,8 +60,10 @@ export const TESTING_ENV = process.env.ENV === 'test';
 export const CI_ENV = process.env.ENV === 'ci';
 export const JWT_SECRET_DEFAULT = 'some-secret-string-default';
 
-export const resolveDidRegistryAddress = (): string => {
-  const didRegistryAddress = process.env.DID_REGISTRY_ADDRESS;
+export const resolveDidRegistryAddress = (
+  didRegistryAddress = process.env.DID_REGISTRY_ADDRESS
+): string => {
+  // const didRegistryAddress = process.env.DID_REGISTRY_ADDRESS;
   if (didRegistryAddress) {
     if (!ethers.utils.isAddress(didRegistryAddress)) {
       log.error(

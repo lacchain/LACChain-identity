@@ -19,7 +19,8 @@ export enum ErrorsMessages {
   INTERNAL_SERVER_ERROR = 'Internal Server Error',
   BAD_REQUEST_ERROR = 'Bad request error',
   USER_ALREADY_EXISTS = 'A user with this email is already registered',
-  CREATE_KEY_ERROR = 'An internal server error occurred while trying to create a new key'
+  CREATE_KEY_ERROR = 'An internal server error occurred while trying to create a new key',
+  UNSUPPORTED_CHAIN_ID = 'Unsupported chain Id'
 }
 
 export const Errors = {
