@@ -3,7 +3,7 @@ import {
   DEFAULT_REGISTRY,
   DOMAIN_NAMES,
   REGISTRY
-} from '../constants/networks/didRegistry';
+} from '../constants/did-web/lac/didRegistryAddresses';
 import { config } from 'dotenv';
 import { ethers } from 'ethers';
 import { LogLevel } from 'typescript-logging';
@@ -47,7 +47,7 @@ export const JWT_SECRET_DEFAULT = 'some-secret-string-default';
 export const resolveDidRegistryAddress = (): string => {
   const didRegistryAddress = process.env.DID_REGISTRY_ADDRESS;
   if (didRegistryAddress) {
-    if (!ethers.isAddress(didRegistryAddress)) {
+    if (!ethers.utils.isAddress(didRegistryAddress)) {
       log.error(
         'Specified DID_REGISTRY_ADDRESS',
         DID_REGISTRY_ADDRESS,
