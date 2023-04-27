@@ -1,3 +1,3 @@
-import { DidController } from './did.controller';
+import { DidWebLacController } from './did-lac/did.controller';
 
-export const controllers = [DidController];
+export const controllers = [DidWebLacController];

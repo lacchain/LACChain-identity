@@ -1,11 +1,17 @@
-import { JsonController, Post, BadRequestError } from 'routing-controllers';
+import {
+  JsonController,
+  Post,
+  BadRequestError,
+  Get,
+  Param
+} from 'routing-controllers';
 import { Service } from 'typedi';
-import { DidServiceWebLac } from '@services/did.service';
+import { DidServiceWebLac } from '@services/did-lac/did.service';
 import { ErrorsMessages } from '@constants/errorMessages';
 
 @JsonController('/did-web-lac')
 @Service()
-export class DidController {
+export class DidWebLacController {
   constructor(private readonly didServiceWebLac: DidServiceWebLac) {}
 
   @Post()
@@ -17,5 +23,9 @@ export class DidController {
         error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR
       );
     }
+  }
+  @Get('/controller/:did')
+  async getDidController(@Param('did') did: string): Promise<any> {
+    return this.didServiceWebLac.getController(did);
   }
 }
