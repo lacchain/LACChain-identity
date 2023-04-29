@@ -20,6 +20,8 @@ export enum ErrorsMessages {
   BAD_REQUEST_ERROR = 'Bad request error',
   USER_ALREADY_EXISTS = 'A user with this email is already registered',
   CREATE_KEY_ERROR = 'An internal server error occurred while trying to create a new key',
+  // eslint-disable-next-line max-len
+  SIGN_TRANSACTION_ERROR = 'An error occurred while trying to sign transaction against external service',
   UNSUPPORTED_CHAIN_ID = 'Unsupported chain Id'
 }
 

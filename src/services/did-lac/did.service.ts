@@ -12,11 +12,15 @@ import {
   getRpcUrl,
   getNodeAddress
 } from '../../config';
-import { keccak256 } from 'ethers/lib/utils';
+import { Interface, keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import DIDRegistryContractInterface from './did-registry';
 import { BadRequestError } from 'routing-controllers';
 import { DidLacService } from './interfaces/did-lac.service';
-import { ErrorsMessages } from '@constants/errorMessages';
+import { ErrorsMessages } from '../../constants/errorMessages';
+import { IRsaAttribute } from 'src/interfaces/did-web-lac/did-web-lac.interface';
+import { ITransaction } from 'src/interfaces/ethereum/transaction';
+import { ethers } from 'ethers';
+import { LacchainLib } from './lacchain/lacchain-ethers';
 
 export type didWelLacAttributes = {
   address: string;
@@ -46,6 +50,8 @@ export class DidServiceWebLac implements DidLacService {
 
   private didRegistryContractInterface: DIDRegistryContractInterface;
 
+  private readonly lacchainLib: LacchainLib;
+
   log = log4TSProvider.getLogger('didService');
   private keyManagerService: KeyManagerService;
   constructor() {
@@ -62,7 +68,43 @@ export class DidServiceWebLac implements DidLacService {
       undefined,
       this.nodeAddress
     );
+    // TODO: factor providers in such way that did service is independent
+    this.lacchainLib = new LacchainLib(this.nodeAddress, this.rpcUrl);
   }
+  async addJwkRSAAttribute(jwkRsaAttribute: IRsaAttribute): Promise<any> {
+    const { address, didRegistryAddress, chainId } = this.decodeDid(
+      jwkRsaAttribute.did
+    );
+    if (chainId.toLowerCase() !== CHAIN_ID.toLowerCase()) {
+      const message = ErrorsMessages.UNSUPPORTED_CHAIN_ID;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+    const jwk = jwkRsaAttribute.rsaJwk;
+    const name = `${jwk.kty}/${jwk.e}`; // TODO: encode properly - write specs
+    const value = jwk.n;
+    const methodName = 'setAttribute';
+    const validity = Math.floor(Date.now() / 1000) + 86400 * 365;
+    const setAttributeMethodSignature = [
+      `function ${methodName}(address,bytes,bytes,uint256) public`
+    ];
+    const setAttributeInterface = new Interface(setAttributeMethodSignature);
+    const encodedData = setAttributeInterface.encodeFunctionData(methodName, [
+      address,
+      toUtf8Bytes(name),
+      toUtf8Bytes(value),
+      validity
+    ]);
+    const didControllerAddress =
+      await this.didRegistryContractInterface.lookupController(address);
+    const tx: ITransaction = {
+      from: didControllerAddress,
+      to: didRegistryAddress,
+      data: encodedData
+    };
+    return this.lacchainLib.signAndSend(tx);
+  }
+
   addAttribute(_did: string, _rsaPublicKey: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
@@ -101,7 +143,7 @@ export class DidServiceWebLac implements DidLacService {
     return { did: did.did };
   }
 
-  private decodeDid(did: string): didWelLacAttributes {
+  decodeDid(did: string): didWelLacAttributes {
     const trimmed = did.replace(this.didLacWebIdentifier, '');
     const data = Buffer.from(this.base58.decode(trimmed));
     const len = data.length;
@@ -129,8 +171,12 @@ export class DidServiceWebLac implements DidLacService {
       throw new BadRequestError(message);
     }
     // TODO: improve code organization: according to didType and version
-    const address = '0x' + data.subarray(4, 24).toString('hex');
-    const didRegistryAddress = '0x' + data.subarray(24, 44).toString('hex');
+    const address = ethers.utils.getAddress(
+      '0x' + data.subarray(4, 24).toString('hex')
+    );
+    const didRegistryAddress = ethers.utils.getAddress(
+      '0x' + data.subarray(24, 44).toString('hex')
+    );
     let c = data.subarray(44, len - 4).toString('hex');
     if (c[0] === '0') {
       c = c.substring(1);

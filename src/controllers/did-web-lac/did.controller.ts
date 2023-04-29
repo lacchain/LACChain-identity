@@ -28,4 +28,8 @@ export class DidWebLacController {
   async getDidController(@Param('did') did: string): Promise<any> {
     return this.didServiceWebLac.getController(did);
   }
+  @Get('/decode/:did')
+  async getDidParams(@Param('did') did: string): Promise<any> {
+    return this.didServiceWebLac.decodeDid(did);
+  }
 }
