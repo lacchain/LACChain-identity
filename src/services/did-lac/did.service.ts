@@ -17,10 +17,16 @@ import DIDRegistryContractInterface from './did-registry';
 import { BadRequestError } from 'routing-controllers';
 import { DidLacService } from './interfaces/did-lac.service';
 import { ErrorsMessages } from '../../constants/errorMessages';
-import { IRsaAttribute } from 'src/interfaces/did-web-lac/did-web-lac.interface';
+import {
+  IJwkAttribute,
+  IJwkEcAttribute,
+  IRsaAttribute
+} from 'src/interfaces/did-web-lac/did-web-lac.interface';
 import { ITransaction } from 'src/interfaces/ethereum/transaction';
 import { ethers } from 'ethers';
 import { LacchainLib } from './lacchain/lacchain-ethers';
+import { encode } from 'cbor';
+import { VM_RELATIONS } from '../../constants/did-web/lac/didVerificationMethodParams';
 
 export type didWelLacAttributes = {
   address: string;
@@ -71,20 +77,73 @@ export class DidServiceWebLac implements DidLacService {
     // TODO: factor providers in such way that did service is independent
     this.lacchainLib = new LacchainLib(this.nodeAddress, this.rpcUrl);
   }
-  async addJwkRSAAttribute(jwkRsaAttribute: IRsaAttribute): Promise<any> {
+  async addRsaJwkAttribute(jwkRsaAttribute: IRsaAttribute): Promise<any> {
+    // TODO: validate RSA params
+    const { kty } = jwkRsaAttribute.rsaJwk;
+    if (kty !== 'RSA') {
+      const message = ErrorsMessages.INVALID_JWK_TYPE;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+    const jwkAttribute: IJwkAttribute = {
+      did: jwkRsaAttribute.did,
+      jwk: jwkRsaAttribute.rsaJwk,
+      validDays: jwkRsaAttribute.validDays,
+      relation: jwkRsaAttribute.relation
+    };
+    return this._addJwkAttribute(jwkAttribute);
+  }
+
+  async addEcJwkAttribute(ecJwkAttribute: IJwkEcAttribute): Promise<any> {
+    // TODO: validate RSA params
+    const { kty } = ecJwkAttribute.ecJwk;
+    if (kty !== 'EC') {
+      const message = ErrorsMessages.INVALID_JWK_TYPE;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+    const jwkAttribute: IJwkAttribute = {
+      did: ecJwkAttribute.did,
+      jwk: ecJwkAttribute.ecJwk,
+      validDays: ecJwkAttribute.validDays,
+      relation: ecJwkAttribute.relation
+    };
+    return this._addJwkAttribute(jwkAttribute);
+  }
+
+  private async _addJwkAttribute(jwkAttribute: IJwkAttribute): Promise<any> {
     const { address, didRegistryAddress, chainId } = this.decodeDid(
-      jwkRsaAttribute.did
+      jwkAttribute.did
     );
     if (chainId.toLowerCase() !== CHAIN_ID.toLowerCase()) {
       const message = ErrorsMessages.UNSUPPORTED_CHAIN_ID;
       this.log.info(message);
       throw new BadRequestError(message);
     }
-    const jwk = jwkRsaAttribute.rsaJwk;
-    const name = `${jwk.kty}/${jwk.e}`; // TODO: encode properly - write specs
-    const value = jwk.n;
+    const validDays = jwkAttribute.validDays;
+    if (validDays < 1) {
+      const message = ErrorsMessages.INVALID_EXPIRATION_DAYS;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+
+    const { relation } = jwkAttribute;
+    if (!VM_RELATIONS.get(relation)) {
+      const message = ErrorsMessages.INVALID_VM_RELATION_TYPE;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+    const { jwk } = jwkAttribute;
+    const algorithm = 'JsonWebKey2020';
+    const didPrimaryAddress = address; // found 'controller' in lacchain specs
+    const encodingMethod = 'cbor';
+
+    // TODO: check if 'controller' (didPrimaryAddress) is really needed
+    // asse/did/JsonWebKey2020/cbor
+    const name = `${relation}/${didPrimaryAddress}/${algorithm}/${encodingMethod}`;
+    const value = encode(jwk);
     const methodName = 'setAttribute';
-    const validity = Math.floor(Date.now() / 1000) + 86400 * 365;
+    const validity = Math.floor(Date.now() / 1000) + 86400 * validDays;
     const setAttributeMethodSignature = [
       `function ${methodName}(address,bytes,bytes,uint256) public`
     ];
@@ -92,7 +151,7 @@ export class DidServiceWebLac implements DidLacService {
     const encodedData = setAttributeInterface.encodeFunctionData(methodName, [
       address,
       toUtf8Bytes(name),
-      toUtf8Bytes(value),
+      value,
       validity
     ]);
     const didControllerAddress =

@@ -1,4 +1,4 @@
-import { IsObject, IsString } from 'class-validator';
+import { IsNumber, IsObject, IsString } from 'class-validator';
 
 export class RsaJwk {
   @IsString()
@@ -9,9 +9,35 @@ export class RsaJwk {
   n!: string;
 }
 
+export class EcJwk {
+  @IsString()
+  kty!: string;
+  @IsString()
+  x!: string;
+  @IsString()
+  y!: string;
+  @IsString()
+  crv!: string;
+}
+
 export class RsaJwkAttributeDTO {
   @IsString()
   did!: string;
+  @IsNumber()
+  validDays!: number;
+  @IsString()
+  relation!: string;
   @IsObject()
   rsaJwk!: RsaJwk;
+}
+
+export class EcJwkAttributeDTO {
+  @IsString()
+  did!: string;
+  @IsNumber()
+  validDays!: number;
+  @IsString()
+  relation!: string;
+  @IsObject()
+  ecJwk!: EcJwk;
 }

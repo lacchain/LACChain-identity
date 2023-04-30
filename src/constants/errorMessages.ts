@@ -22,7 +22,10 @@ export enum ErrorsMessages {
   CREATE_KEY_ERROR = 'An internal server error occurred while trying to create a new key',
   // eslint-disable-next-line max-len
   SIGN_TRANSACTION_ERROR = 'An error occurred while trying to sign transaction against external service',
-  UNSUPPORTED_CHAIN_ID = 'Unsupported chain Id'
+  UNSUPPORTED_CHAIN_ID = 'Unsupported chain Id',
+  INVALID_EXPIRATION_DAYS = 'Valid days must be greater than zero',
+  INVALID_JWK_TYPE = 'Invalid Jwk type',
+  INVALID_VM_RELATION_TYPE = 'Invalid verification method relation type'
 }
 
 export const Errors = {
