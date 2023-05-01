@@ -1,6 +1,6 @@
 import { IsNumber, IsObject, IsString } from 'class-validator';
 
-export class RsaJwk {
+export class RsaJwkDTO {
   @IsString()
   kty!: string;
   @IsString()
@@ -9,7 +9,7 @@ export class RsaJwk {
   n!: string;
 }
 
-export class EcJwk {
+export class EcJwkDTO {
   @IsString()
   kty!: string;
   @IsString()
@@ -28,7 +28,7 @@ export class RsaJwkAttributeDTO {
   @IsString()
   relation!: string;
   @IsObject()
-  rsaJwk!: RsaJwk;
+  rsaJwk!: RsaJwkDTO;
 }
 
 export class EcJwkAttributeDTO {
@@ -39,5 +39,5 @@ export class EcJwkAttributeDTO {
   @IsString()
   relation!: string;
   @IsObject()
-  ecJwk!: EcJwk;
+  ecJwk!: EcJwkDTO;
 }

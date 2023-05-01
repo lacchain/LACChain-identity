@@ -4,7 +4,7 @@ export interface IJwkAttribute {
   validDays: number;
   relation: string;
 }
-export interface IRsaAttribute {
+export interface IJwkRsaAttribute {
   did: string;
   rsaJwk: RsaJwk;
   validDays: number;

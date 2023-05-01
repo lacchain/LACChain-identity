@@ -15,24 +15,21 @@ import {
 import { Interface, keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import DIDRegistryContractInterface from './did-registry';
 import { BadRequestError } from 'routing-controllers';
-import { DidLacService } from './interfaces/did-lac.service';
+import {
+  DidLacService,
+  didWelLacAttributes
+} from './interfaces/did-lac.service';
 import { ErrorsMessages } from '../../constants/errorMessages';
 import {
   IJwkAttribute,
   IJwkEcAttribute,
-  IRsaAttribute
+  IJwkRsaAttribute
 } from 'src/interfaces/did-web-lac/did-web-lac.interface';
 import { ITransaction } from 'src/interfaces/ethereum/transaction';
 import { ethers } from 'ethers';
 import { LacchainLib } from './lacchain/lacchain-ethers';
 import { encode } from 'cbor';
 import { VM_RELATIONS } from '../../constants/did-web/lac/didVerificationMethodParams';
-
-export type didWelLacAttributes = {
-  address: string;
-  didRegistryAddress: string;
-  chainId: string;
-};
 
 @Service()
 export class DidServiceWebLac implements DidLacService {
@@ -77,7 +74,7 @@ export class DidServiceWebLac implements DidLacService {
     // TODO: factor providers in such way that did service is independent
     this.lacchainLib = new LacchainLib(this.nodeAddress, this.rpcUrl);
   }
-  async addRsaJwkAttribute(jwkRsaAttribute: IRsaAttribute): Promise<any> {
+  async addRsaJwkAttribute(jwkRsaAttribute: IJwkRsaAttribute): Promise<any> {
     // TODO: validate RSA params
     const { kty } = jwkRsaAttribute.rsaJwk;
     if (kty !== 'RSA') {
