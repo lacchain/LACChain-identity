@@ -1,6 +1,7 @@
 export { DidServiceWebLac } from './services/did-lac/didWebLac.service';
+export { DidLac1Service } from './services/did-lac/didLac1.service';
 export {
-  didWelLacAttributes,
+  didLacAttributes,
   DidLacService
 } from './services/did-lac/interfaces/did-lac.service';
 export { DidService, did as DidType } from './services/interfaces/did.service';

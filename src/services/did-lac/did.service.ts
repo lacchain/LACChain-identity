@@ -14,10 +14,7 @@ import {
 import { Interface, keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import DIDRegistryContractInterface from './did-registry';
 import { BadRequestError } from 'routing-controllers';
-import {
-  DidLacService,
-  didWelLacAttributes
-} from './interfaces/did-lac.service';
+import { DidLacService, didLacAttributes } from './interfaces/did-lac.service';
 import { ErrorsMessages } from '../../constants/errorMessages';
 import {
   IJwkAttribute,
@@ -196,7 +193,7 @@ export abstract class DidService implements DidLacService {
     return { did: did.did };
   }
 
-  decodeDid(did: string): didWelLacAttributes {
+  decodeDid(did: string): didLacAttributes {
     const trimmed = did.replace(this.didIdentifier, '');
     const data = Buffer.from(this.base58.decode(trimmed));
     const len = data.length;
