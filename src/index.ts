@@ -1,4 +1,4 @@
-export { DidServiceWebLac } from './services/did-lac/did.service';
+export { DidServiceWebLac } from './services/did-lac/didWebLac.service';
 export {
   didWelLacAttributes,
   DidLacService

@@ -7,7 +7,6 @@ import {
   CHAIN_ID,
   getChainId,
   log4TSProvider,
-  resolveDidDomainName,
   resolveDidRegistryAddress,
   getRpcUrl,
   getNodeAddress
@@ -32,7 +31,7 @@ import { encode } from 'cbor';
 import { VM_RELATIONS } from '../../constants/did-web/lac/didVerificationMethodParams';
 
 @Service()
-export class DidServiceWebLac implements DidLacService {
+export abstract class DidService implements DidLacService {
   private readonly didRepository = getRepository<Did>(Did);
   private readonly base58 = require('base-x')(
     '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
@@ -42,14 +41,13 @@ export class DidServiceWebLac implements DidLacService {
   private readonly didEncodingVersion = '0001'; // constant for encoding
   // eslint-disable-next-line max-len
   private readonly didType = '0001'; // constant
-  private readonly domainName: string;
 
   private readonly chainId: string;
   private readonly didRegistryAddress: string;
   private readonly rpcUrl: string;
   private readonly nodeAddress: string;
 
-  private readonly didLacWebIdentifier: string;
+  private readonly didIdentifier: string;
 
   private didRegistryContractInterface: DIDRegistryContractInterface;
 
@@ -57,12 +55,11 @@ export class DidServiceWebLac implements DidLacService {
 
   log = log4TSProvider.getLogger('didService');
   private keyManagerService: KeyManagerService;
-  constructor() {
+  constructor(didIdentifier: string) {
     this.keyManagerService = new KeyManagerService();
     this.chainId = getChainId();
     this.didRegistryAddress = resolveDidRegistryAddress();
-    this.domainName = resolveDidDomainName();
-    this.didLacWebIdentifier = `did:web:${this.domainName}:`;
+    this.didIdentifier = didIdentifier;
     this.rpcUrl = getRpcUrl();
     this.nodeAddress = getNodeAddress();
     this.didRegistryContractInterface = new DIDRegistryContractInterface(
@@ -188,7 +185,7 @@ export class DidServiceWebLac implements DidLacService {
     const did = EntityMapper.mapTo(Did, {});
     did.keyId = key.keyId;
     did.did =
-      this.didLacWebIdentifier +
+      this.didIdentifier +
       this.encode(
         this.didType,
         this.chainId,
@@ -200,7 +197,7 @@ export class DidServiceWebLac implements DidLacService {
   }
 
   decodeDid(did: string): didWelLacAttributes {
-    const trimmed = did.replace(this.didLacWebIdentifier, '');
+    const trimmed = did.replace(this.didIdentifier, '');
     const data = Buffer.from(this.base58.decode(trimmed));
     const len = data.length;
     const encodedPayload = data.subarray(0, len - 4);

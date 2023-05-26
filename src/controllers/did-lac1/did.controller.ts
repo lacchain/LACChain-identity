@@ -6,18 +6,18 @@ import {
   Param
 } from 'routing-controllers';
 import { Service } from 'typedi';
-import { DidServiceWebLac } from '@services/did-lac/did.service';
+import { DidLac1Service } from '@services/did-lac/didLac1.service';
 import { ErrorsMessages } from '@constants/errorMessages';
 
-@JsonController('/did-web-lac')
+@JsonController('/did-lac1')
 @Service()
-export class DidWebLacController {
-  constructor(private readonly didServiceWebLac: DidServiceWebLac) {}
+export class DidLac1Controller {
+  constructor(private readonly didService: DidLac1Service) {}
 
   @Post()
-  async createDidWebLac(): Promise<any> {
+  async createDidLac1(): Promise<any> {
     try {
-      return this.didServiceWebLac.createDid();
+      return this.didService.createDid();
     } catch (error: any) {
       throw new BadRequestError(
         error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR
@@ -26,10 +26,10 @@ export class DidWebLacController {
   }
   @Get('/controller/:did')
   async getDidController(@Param('did') did: string): Promise<any> {
-    return this.didServiceWebLac.getController(did);
+    return this.didService.getController(did);
   }
   @Get('/decode/:did')
   async getDidParams(@Param('did') did: string): Promise<any> {
-    return this.didServiceWebLac.decodeDid(did);
+    return this.didService.decodeDid(did);
   }
 }

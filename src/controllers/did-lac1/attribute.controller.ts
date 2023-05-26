@@ -5,24 +5,24 @@ import {
   Body
 } from 'routing-controllers';
 import { Service } from 'typedi';
-import { DidServiceWebLac } from '../../services/did-lac/didWebLac.service';
 import { ErrorsMessages } from '../../constants/errorMessages';
 import {
   EcJwkAttributeDTO,
   RsaJwkAttributeDTO
 } from '../../dto/did-web-lac/addAttributeDTO';
+import { DidLac1Service } from '@services/did-lac/didLac1.service';
 
-@JsonController('/did-web-lac/attribute')
+@JsonController('/did-lac1/attribute')
 @Service()
-export class DidWebLacAttributeController {
-  constructor(private readonly didServiceWebLac: DidServiceWebLac) {}
+export class DidLac1AttributeController {
+  constructor(private readonly didService: DidLac1Service) {}
 
   @Post('/add/jwk/rsa')
   async addRsaJwkAttribute(
     @Body({ validate: true }) attribute: RsaJwkAttributeDTO
   ): Promise<any> {
     try {
-      return this.didServiceWebLac.addRsaJwkAttribute(attribute);
+      return this.didService.addRsaJwkAttribute(attribute);
     } catch (error: any) {
       throw new BadRequestError(
         error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR
@@ -35,7 +35,7 @@ export class DidWebLacAttributeController {
     @Body({ validate: true }) attribute: EcJwkAttributeDTO
   ): Promise<any> {
     try {
-      return this.didServiceWebLac.addEcJwkAttribute(attribute);
+      return this.didService.addEcJwkAttribute(attribute);
     } catch (error: any) {
       throw new BadRequestError(
         error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR
