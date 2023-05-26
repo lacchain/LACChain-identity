@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "es6",
+    "declaration": true,
     "module": "commonjs",
     "sourceMap": true,
     "outDir": "dist",
@@ -35,5 +36,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist"],
+  "include": [
+    "src/**/*"
+  ]
 }

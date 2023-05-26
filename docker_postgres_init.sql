@@ -1,10 +1,10 @@
 CREATE USER docker WITH PASSWORD 'password' CREATEDB;
 
-CREATE DATABASE express_api_base_development
+CREATE DATABASE laccpass_identity_development
 WITH OWNER = docker
 CONNECTION LIMIT = -1;
 
-CREATE DATABASE express_api_base_test
+CREATE DATABASE laccpass_identity
 WITH OWNER = docker
 CONNECTION LIMIT = -1;
 
