@@ -22,7 +22,7 @@ import {
   IJwkEcAttribute,
   IJwkRsaAttribute,
   IX509Attribute
-} from 'src/interfaces/did-web-lac/did-web-lac.interface';
+} from 'src/interfaces/did-lacchain/did-lacchain.interface';
 import { ITransaction } from 'src/interfaces/ethereum/transaction';
 import { ethers } from 'ethers';
 import { LacchainLib } from './lacchain/lacchain-ethers';

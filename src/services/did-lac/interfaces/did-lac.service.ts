@@ -1,7 +1,7 @@
 import {
   IJwkEcAttribute,
   IJwkRsaAttribute
-} from 'src/interfaces/did-web-lac/did-web-lac.interface';
+} from 'src/interfaces/did-lacchain/did-lacchain.interface';
 import { DidService } from '../../interfaces/did.service';
 
 export type didLacAttributes = {

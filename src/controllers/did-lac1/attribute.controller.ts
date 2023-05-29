@@ -10,7 +10,7 @@ import { ErrorsMessages } from '../../constants/errorMessages';
 import {
   EcJwkAttributeDTO,
   RsaJwkAttributeDTO
-} from '../../dto/did-web-lac/addAttributeDTO';
+} from '../../dto/did-lac/addAttributeDTO';
 import { DidLac1Service } from '@services/did-lac/didLac1.service';
 import { log4TSProvider } from '@config';
 
