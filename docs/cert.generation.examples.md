@@ -9,7 +9,8 @@ mkdir certs && cd certs
 ```
 
 ## Openssl cnf file example
-
+Execute the following command to create a configuration file that will be used later
+```sh
 cat > "openssl.cnf" << EOF
 [req]
 default_bits = 2048
@@ -42,10 +43,13 @@ subjectAltName       = @alt_names
 IP.1  = 1.2.3.4
 DNS.1 = my.dns.name
 EOF
+```
 
 ## RSA Certificate example
 
 ### SCA
+
+In this section you will create a SCA (Signing Certificate Authority) which will be self signed and whose purpose is to sign x509 DSC certificates used to sign health related data.
 
 ```sh
 mkdir SCA
@@ -63,6 +67,8 @@ openssl req -x509 -new -nodes -key "SCA/SCA.key" -subj "/C=US/ST=CA/O=Ministry O
 ```
 
 ### DSC
+
+This section will create the DSC (Digital Signing Certificate) whose intention is to sign health related data (e.g. DDCC vaccine certificates)
 
 
 ```sh

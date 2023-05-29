@@ -1,9 +1,14 @@
-# Identity API steps for LACPass
+# Identity API - Steps for LACPass
 
 ## Requisites before continuing
 * You should have configured/access to the LACPass API
 * You should have the public x509 certificate whose purpose is to sign health data.
-    * For demo purposes you can set these certificates from [certificate generation example](./cert.generation.examples.md). After following these steps you will have the certificate in the path: certs/DSC/DSC.crt
+    * For demo purposes you can set these certificates from [certificate generation example](./cert.generation.examples.md). After following those steps you will have the certificate in the path: certs/DSC/DSC.crt
+* You should have a terminal to execute the commands listed below.
+
+## Interacting
+
+In this section you will have a did (Decentralized Indetifier) and you will have it associated with the X509 certificate you use to sign Health data.
 
 1. Set API url to interact with
 
