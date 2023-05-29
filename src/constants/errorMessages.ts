@@ -25,7 +25,13 @@ export enum ErrorsMessages {
   UNSUPPORTED_CHAIN_ID = 'Unsupported chain Id',
   INVALID_EXPIRATION_DAYS = 'Valid days must be greater than zero',
   INVALID_JWK_TYPE = 'Invalid Jwk type',
-  INVALID_VM_RELATION_TYPE = 'Invalid verification method relation type'
+  INVALID_VM_RELATION_TYPE = 'Invalid verification method relation type',
+  INVALID_X509_SERIAL_NUMBER = 'Invalid x509 serial number',
+  INVALID_X509_SUBJECT = 'Invalid x509 subject',
+  X509_KEY_USAGE_LENGTH_ERROR = 'Invalid key usage length array',
+  // eslint-disable-next-line max-len
+  X509_KEY_USAGE_SIGNATURE_DIRECTIVE_REQUIRED = '`digital signature` is required inside key usage array',
+  X509_EXPIRED_CERTIFICATE = 'Certificate has expired'
 }
 
 export const Errors = {

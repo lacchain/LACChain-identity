@@ -18,14 +18,17 @@ import { DidLacService, didLacAttributes } from './interfaces/did-lac.service';
 import { ErrorsMessages } from '../../constants/errorMessages';
 import {
   IJwkAttribute,
+  IJwkAttribute1,
   IJwkEcAttribute,
-  IJwkRsaAttribute
+  IJwkRsaAttribute,
+  IX509Attribute
 } from 'src/interfaces/did-web-lac/did-web-lac.interface';
 import { ITransaction } from 'src/interfaces/ethereum/transaction';
 import { ethers } from 'ethers';
 import { LacchainLib } from './lacchain/lacchain-ethers';
 import { encode } from 'cbor';
 import { VM_RELATIONS } from '../../constants/did-web/lac/didVerificationMethodParams';
+import { X509Certificate } from 'crypto';
 
 @Service()
 export abstract class DidService implements DidLacService {
@@ -75,6 +78,8 @@ export abstract class DidService implements DidLacService {
       const message = ErrorsMessages.INVALID_JWK_TYPE;
       this.log.info(message);
       throw new BadRequestError(message);
+      // TODO: validate x5c if exists
+      // validate expiration dates according to policies
     }
     const jwkAttribute: IJwkAttribute = {
       did: jwkRsaAttribute.did,
@@ -82,7 +87,7 @@ export abstract class DidService implements DidLacService {
       validDays: jwkRsaAttribute.validDays,
       relation: jwkRsaAttribute.relation
     };
-    return this._addJwkAttribute(jwkAttribute);
+    return this._addJwkAttributeWithDays(jwkAttribute);
   }
 
   async addEcJwkAttribute(ecJwkAttribute: IJwkEcAttribute): Promise<any> {
@@ -99,21 +104,92 @@ export abstract class DidService implements DidLacService {
       validDays: ecJwkAttribute.validDays,
       relation: ecJwkAttribute.relation
     };
-    return this._addJwkAttribute(jwkAttribute);
+    return this._addJwkAttributeWithDays(jwkAttribute);
   }
 
-  private async _addJwkAttribute(jwkAttribute: IJwkAttribute): Promise<any> {
+  async addJwkFromPem(x509Attribute: IX509Attribute): Promise<any> {
+    const { x509, did, relation } = x509Attribute;
+    // if (x509.keyUsage.length <= 0) {
+    //   throw new BadRequestError(ErrorsMessages.X509_KEY_USAGE_LENGTH_ERROR);
+    // }
+    // if (!x509.keyUsage.find(el => el === 'digital signature')) {
+    //   throw new BadRequestError(
+    //     ErrorsMessages.X509_KEY_USAGE_SIGNATURE_DIRECTIVE_REQUIRED
+    //   );
+    // }
+    const serialNumber = x509.serialNumber;
+    if (serialNumber.length <= 0) {
+      throw new BadRequestError(ErrorsMessages.INVALID_X509_SERIAL_NUMBER);
+    }
+    const subject = x509.subject;
+    if (subject.length <= 0) {
+      throw new BadRequestError(ErrorsMessages.INVALID_X509_SUBJECT);
+    }
+    // TODO: validate subject required params
+    // console.log('subject', subject);
+    // const regex = /[^\w\s]/g;
+    // subject.search(regex);
+    // TODO: validate dates, at least that the certificate is not expired
+    const validTo = x509.validTo;
+    console.log('validTo', validTo);
+    const futureTime = Math.floor(new Date(validTo).getTime() / 1000);
+    const delta = futureTime - Math.floor(Date.now() / 1000);
+    if (delta < 0) {
+      throw new BadRequestError(ErrorsMessages.X509_EXPIRED_CERTIFICATE);
+    }
+    if (delta > 86400 * 365) {
+      this.log.info(
+        'Incoming certificate is greater than one year, expires in',
+        Math.floor(delta / 86400),
+        'days'
+      );
+    }
+    const pubKey = x509.publicKey;
+    const jwk = pubKey.export({ format: 'jwk' });
+    const extendedJwk = { ...jwk, x5c: [x509.raw.toString('base64')] };
+    const jwkAttr: IJwkAttribute1 = {
+      did,
+      jwk: extendedJwk,
+      exp: futureTime,
+      relation
+    };
+    return this._addJwkAttribute(jwkAttr);
+  }
+
+  async rawAddAttributeFromX509Certificate(
+    formData: any,
+    x509Cert: Express.Multer.File
+  ) {
+    const { did, relation } = this.validateAndExtractDidFromObject(formData);
+    const x509 = new X509Certificate(x509Cert.buffer);
+    return this.addJwkFromPem({
+      x509,
+      did,
+      relation
+    } as IX509Attribute);
+  }
+
+  private async _addJwkAttributeWithDays(
+    jwkAttribute: IJwkAttribute
+  ): Promise<any> {
+    const validDays = jwkAttribute.validDays;
+    const validity = Math.floor(Date.now() / 1000) + 86400 * validDays;
+    const { did, jwk, relation } = jwkAttribute;
+    const mappedJwkAttribute: IJwkAttribute1 = {
+      did,
+      jwk,
+      exp: validity,
+      relation
+    };
+    return this._addJwkAttribute(mappedJwkAttribute);
+  }
+
+  private async _addJwkAttribute(jwkAttribute: IJwkAttribute1): Promise<any> {
     const { address, didRegistryAddress, chainId } = this.decodeDid(
       jwkAttribute.did
     );
     if (chainId.toLowerCase() !== CHAIN_ID.toLowerCase()) {
       const message = ErrorsMessages.UNSUPPORTED_CHAIN_ID;
-      this.log.info(message);
-      throw new BadRequestError(message);
-    }
-    const validDays = jwkAttribute.validDays;
-    if (validDays < 1) {
-      const message = ErrorsMessages.INVALID_EXPIRATION_DAYS;
       this.log.info(message);
       throw new BadRequestError(message);
     }
@@ -134,7 +210,7 @@ export abstract class DidService implements DidLacService {
     const name = `${relation}/${didPrimaryAddress}/${algorithm}/${encodingMethod}`;
     const value = encode(jwk);
     const methodName = 'setAttribute';
-    const validity = Math.floor(Date.now() / 1000) + 86400 * validDays;
+    const validity = jwkAttribute.exp;
     const setAttributeMethodSignature = [
       `function ${methodName}(address,bytes,bytes,uint256) public`
     ];
@@ -269,5 +345,18 @@ export abstract class DidService implements DidLacService {
       keccak256(Buffer.concat(payload)).replace('0x', ''),
       'hex'
     ).subarray(0, 4);
+  }
+
+  private validateAndExtractDidFromObject(formData: any): {
+    did: string;
+    relation: string;
+  } {
+    if (!formData?.data) {
+      throw new BadRequestError(ErrorsMessages.BAD_REQUEST_ERROR);
+    }
+    if (Object.keys(formData?.data).length === 0) {
+      throw new BadRequestError(ErrorsMessages.BAD_REQUEST_ERROR);
+    }
+    return JSON.parse(formData.data) as { did: string; relation: string };
   }
 }
