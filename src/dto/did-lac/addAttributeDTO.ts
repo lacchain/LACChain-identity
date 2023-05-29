@@ -1,4 +1,12 @@
-import { IsNumber, IsObject, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsDefined,
+  IsNumber,
+  IsObject,
+  IsString,
+  ValidateNested
+} from 'class-validator';
 
 export class RsaJwkDTO {
   @IsString()
@@ -7,6 +15,8 @@ export class RsaJwkDTO {
   e!: string;
   @IsString()
   n!: string;
+  @IsArray()
+  x5c!: string[];
 }
 
 export class EcJwkDTO {
@@ -27,7 +37,9 @@ export class RsaJwkAttributeDTO {
   validDays!: number;
   @IsString()
   relation!: string;
-  @IsObject()
+  @ValidateNested()
+  @IsDefined()
+  @Type(() => RsaJwkDTO)
   rsaJwk!: RsaJwkDTO;
 }
 
