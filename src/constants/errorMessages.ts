@@ -31,7 +31,10 @@ export enum ErrorsMessages {
   X509_KEY_USAGE_LENGTH_ERROR = 'Invalid key usage length array',
   // eslint-disable-next-line max-len
   X509_KEY_USAGE_SIGNATURE_DIRECTIVE_REQUIRED = '`digital signature` is required inside key usage array',
-  X509_EXPIRED_CERTIFICATE = 'Certificate has expired'
+  X509_EXPIRED_CERTIFICATE = 'Certificate has expired',
+  X509_INVALID_ORGANIZATION_SUBJECT = 'Invalid or organization subject',
+  X509_INVALID_COUNTRY = 'Invalid or certificate country',
+  X509_INVALID_COMMON_NAME = 'Invalid x509 CN name'
 }
 
 export const Errors = {

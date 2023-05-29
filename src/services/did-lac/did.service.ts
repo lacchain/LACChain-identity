@@ -109,6 +109,8 @@ export abstract class DidService implements DidLacService {
 
   async addJwkFromPem(x509Attribute: IX509Attribute): Promise<any> {
     const { x509, did, relation } = x509Attribute;
+    // TODO: verify key usage
+    // console.log('key usage: ' + x509.keyUsage);
     // if (x509.keyUsage.length <= 0) {
     //   throw new BadRequestError(ErrorsMessages.X509_KEY_USAGE_LENGTH_ERROR);
     // }
@@ -125,21 +127,16 @@ export abstract class DidService implements DidLacService {
     if (subject.length <= 0) {
       throw new BadRequestError(ErrorsMessages.INVALID_X509_SUBJECT);
     }
-    // TODO: validate subject required params
-    // console.log('subject', subject);
-    // const regex = /[^\w\s]/g;
-    // subject.search(regex);
-    // TODO: validate dates, at least that the certificate is not expired
+    this._validateX509CertificateSubjectField(subject);
     const validTo = x509.validTo;
-    console.log('validTo', validTo);
     const futureTime = Math.floor(new Date(validTo).getTime() / 1000);
     const delta = futureTime - Math.floor(Date.now() / 1000);
     if (delta < 0) {
       throw new BadRequestError(ErrorsMessages.X509_EXPIRED_CERTIFICATE);
     }
-    if (delta > 86400 * 365) {
+    if (delta > 86400 * 365 * 2) {
       this.log.info(
-        'Incoming certificate is greater than one year, expires in',
+        'Incoming certificate is greater than two years, expires in',
         Math.floor(delta / 86400),
         'days'
       );
@@ -160,7 +157,7 @@ export abstract class DidService implements DidLacService {
     formData: any,
     x509Cert: Express.Multer.File
   ) {
-    const { did, relation } = this.validateAndExtractDidFromObject(formData);
+    const { did, relation } = this._validateAndExtractDidFromObject(formData);
     const x509 = new X509Certificate(x509Cert.buffer);
     return this.addJwkFromPem({
       x509,
@@ -202,12 +199,11 @@ export abstract class DidService implements DidLacService {
     }
     const { jwk } = jwkAttribute;
     const algorithm = 'JsonWebKey2020';
-    const didPrimaryAddress = address; // found 'controller' in lacchain specs
+    const keyAttrDidController = jwkAttribute.did; // defaulting to main did
     const encodingMethod = 'cbor';
 
-    // TODO: check if 'controller' (didPrimaryAddress) is really needed
     // asse/did/JsonWebKey2020/cbor
-    const name = `${relation}/${didPrimaryAddress}/${algorithm}/${encodingMethod}`;
+    const name = `${relation}/${keyAttrDidController}/${algorithm}/${encodingMethod}`;
     const value = encode(jwk);
     const methodName = 'setAttribute';
     const validity = jwkAttribute.exp;
@@ -347,7 +343,7 @@ export abstract class DidService implements DidLacService {
     ).subarray(0, 4);
   }
 
-  private validateAndExtractDidFromObject(formData: any): {
+  private _validateAndExtractDidFromObject(formData: any): {
     did: string;
     relation: string;
   } {
@@ -358,5 +354,25 @@ export abstract class DidService implements DidLacService {
       throw new BadRequestError(ErrorsMessages.BAD_REQUEST_ERROR);
     }
     return JSON.parse(formData.data) as { did: string; relation: string };
+  }
+
+  private _validateX509CertificateSubjectField(subject: string) {
+    const orgRegex = /O=.+/i;
+    const foundOrg = subject.search(orgRegex);
+    if (foundOrg < 0) {
+      throw new BadRequestError(
+        ErrorsMessages.X509_INVALID_ORGANIZATION_SUBJECT
+      );
+    }
+    const countryRegex = /C=.+/i;
+    const foundCountry = subject.search(countryRegex);
+    if (foundCountry < 0) {
+      throw new BadRequestError(ErrorsMessages.X509_INVALID_COUNTRY);
+    }
+    const commonNameRegex = /CN=.+/i;
+    const foundCommonName = subject.search(commonNameRegex);
+    if (foundCommonName < 0) {
+      throw new BadRequestError(ErrorsMessages.X509_INVALID_COMMON_NAME);
+    }
   }
 }
