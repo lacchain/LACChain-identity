@@ -9,7 +9,7 @@ import {
 } from 'routing-controllers';
 import { Service } from 'typedi';
 
-@JsonController('/did-lac1/delegate')
+@JsonController('/did/lac1/delegate')
 @Service()
 export class DidLac1DelegateController {
   constructor(private readonly didService: DidLac1Service) {}

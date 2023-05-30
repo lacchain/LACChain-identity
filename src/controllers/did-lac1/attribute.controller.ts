@@ -13,7 +13,7 @@ import {
 } from '../../dto/did-lac/addAttributeDTO';
 import { DidLac1Service } from '@services/did-lac/didLac1.service';
 
-@JsonController('/did-lac1/attribute')
+@JsonController('/did/lac1/attribute')
 @Service()
 export class DidLac1AttributeController {
   constructor(private readonly didService: DidLac1Service) {}
