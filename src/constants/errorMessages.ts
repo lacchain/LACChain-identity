@@ -26,6 +26,7 @@ export enum ErrorsMessages {
   INVALID_EXPIRATION_DAYS = 'Valid days must be greater than zero',
   INVALID_JWK_TYPE = 'Invalid Jwk type',
   INVALID_VM_RELATION_TYPE = 'Invalid verification method relation type',
+  INVALID_DELEGATE_TYPE = 'Invalid delegate type',
   INVALID_X509_SERIAL_NUMBER = 'Invalid x509 serial number',
   INVALID_X509_SUBJECT = 'Invalid x509 subject',
   X509_KEY_USAGE_LENGTH_ERROR = 'Invalid key usage length array',

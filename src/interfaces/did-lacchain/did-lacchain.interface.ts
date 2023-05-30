@@ -1,4 +1,16 @@
 import { X509Certificate } from 'crypto';
+export interface IOnchainDelegate {
+  did: string;
+  exp: number;
+  type: string;
+  delegateAddress: string;
+}
+
+export interface INewOnchainDelegate {
+  did: string;
+  validDays: number;
+  type: string;
+}
 
 export interface IJwkAttribute {
   did: string;

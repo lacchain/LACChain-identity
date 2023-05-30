@@ -12,12 +12,10 @@ import {
   RsaJwkAttributeDTO
 } from '../../dto/did-lac/addAttributeDTO';
 import { DidLac1Service } from '@services/did-lac/didLac1.service';
-import { log4TSProvider } from '@config';
 
 @JsonController('/did-lac1/attribute')
 @Service()
 export class DidLac1AttributeController {
-  log = log4TSProvider.getLogger('attribute-controller');
   constructor(private readonly didService: DidLac1Service) {}
 
   @Post('/add/jwk/rsa')
