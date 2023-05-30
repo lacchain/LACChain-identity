@@ -1,8 +1,11 @@
 import {
   IJwkEcAttribute,
-  IJwkRsaAttribute
+  IJwkRsaAttribute,
+  INewOnchainDelegate
 } from 'src/interfaces/did-lacchain/did-lacchain.interface';
 import { DidService } from '../../interfaces/did.service';
+// eslint-disable-next-line max-len
+import { INewOnchainDelegateResponse } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
 
 export type didLacAttributes = {
   address: string;
@@ -15,4 +18,7 @@ export interface DidLacService extends DidService {
   addEcJwkAttribute(ecJwkAttribute: IJwkEcAttribute): Promise<any>;
   getController(did: string): Promise<any>;
   decodeDid(did: string): didLacAttributes;
+  createNewOnchainDelegate(
+    newOnchainDelegate: INewOnchainDelegate
+  ): Promise<INewOnchainDelegateResponse>;
 }
