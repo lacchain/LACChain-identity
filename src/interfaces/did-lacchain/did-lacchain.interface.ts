@@ -25,6 +25,15 @@ export interface IAccountIdAttribute {
   blockchainAccountId: string;
 }
 
+export interface IGenericAttributeFields {
+  did: string;
+  exp: number;
+  relation: string;
+  algorithm: string;
+  encodingMethod: string;
+  value: any;
+}
+
 export interface IAddAccountIdAttribute {
   did: string;
   validDays: number;

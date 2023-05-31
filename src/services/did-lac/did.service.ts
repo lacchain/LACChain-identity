@@ -19,6 +19,7 @@ import { ErrorsMessages } from '../../constants/errorMessages';
 import {
   IAccountIdAttribute,
   IAddAccountIdAttribute,
+  IGenericAttributeFields,
   IJwkAttribute,
   IJwkAttribute1,
   IJwkEcAttribute,
@@ -36,6 +37,7 @@ import { ethers } from 'ethers';
 import { LacchainLib } from './lacchain/lacchain-ethers';
 import { encode } from 'cbor';
 import {
+  ATTRIBUTE_ENCODING_METHODS,
   DELEGATE_TYPES,
   VM_RELATIONS
 } from '../../constants/did-web/lac/didVerificationMethodParams';
@@ -250,49 +252,15 @@ export abstract class DidService implements DidLacService {
   }
 
   private async _addJwkAttribute(jwkAttribute: IJwkAttribute1): Promise<any> {
-    const { address, didRegistryAddress, chainId } = this.decodeDid(
-      jwkAttribute.did
-    );
-    if (chainId.toLowerCase() !== CHAIN_ID.toLowerCase()) {
-      const message = ErrorsMessages.UNSUPPORTED_CHAIN_ID;
-      this.log.info(message);
-      throw new BadRequestError(message);
-    }
-
-    const { relation } = jwkAttribute;
-    if (!VM_RELATIONS.get(relation)) {
-      const message = ErrorsMessages.INVALID_VM_RELATION_TYPE;
-      this.log.info(message);
-      throw new BadRequestError(message);
-    }
-    const { jwk } = jwkAttribute;
-    const algorithm = 'JsonWebKey2020';
-    const keyAttrDidController = jwkAttribute.did; // defaulting to main did
-    const encodingMethod = 'cbor';
-
-    // asse/did/JsonWebKey2020/cbor
-    const name = `${relation}/${keyAttrDidController}/${algorithm}/${encodingMethod}`;
-    const value = encode(jwk);
-    const methodName = 'setAttribute';
-    const validity = jwkAttribute.exp;
-    const setAttributeMethodSignature = [
-      `function ${methodName}(address,bytes,bytes,uint256) public`
-    ];
-    const setAttributeInterface = new Interface(setAttributeMethodSignature);
-    const encodedData = setAttributeInterface.encodeFunctionData(methodName, [
-      address,
-      toUtf8Bytes(name),
-      value,
-      validity
-    ]);
-    const didControllerAddress =
-      await this.didRegistryContractInterface.lookupController(address);
-    const tx: ITransaction = {
-      from: didControllerAddress,
-      to: didRegistryAddress,
-      data: encodedData
+    const attribute: IGenericAttributeFields = {
+      did: jwkAttribute.did,
+      exp: jwkAttribute.exp,
+      relation: jwkAttribute.relation,
+      algorithm: 'jwk',
+      encodingMethod: 'cbor',
+      value: encode(jwkAttribute.jwk)
     };
-    return this.lacchainLib.signAndSend(tx);
+    return this._addAttribute(attribute);
   }
 
   async addNewEthereumAccountIdAttribute(
@@ -335,35 +303,51 @@ export abstract class DidService implements DidLacService {
   private async _addEthereumAccountIdAttribute(
     accountIdAttribute: IAccountIdAttribute
   ): Promise<any> {
-    const { address, didRegistryAddress, chainId } = this.decodeDid(
-      accountIdAttribute.did
-    );
     if (!isAddress(accountIdAttribute.blockchainAccountId)) {
       const message = ErrorsMessages.ATTRIBUTE_VALUE_ERROR;
       this.log.info(message);
       throw new BadRequestError(message);
     }
+    const attribute: IGenericAttributeFields = {
+      did: accountIdAttribute.did,
+      exp: accountIdAttribute.exp,
+      relation: accountIdAttribute.relation,
+      algorithm: 'esecp256k1rm',
+      encodingMethod: 'hex',
+      value: accountIdAttribute.blockchainAccountId
+    };
+    return this._addAttribute(attribute);
+  }
+
+  private async _addAttribute(
+    attribute: IGenericAttributeFields
+  ): Promise<any> {
+    const { algorithm, encodingMethod, value } = attribute;
+    if (!ATTRIBUTE_ENCODING_METHODS.get(encodingMethod)) {
+      const message = ErrorsMessages.UNSUPPORTED_ATTRIBUTE_ENCODING_METHOD;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+    const { address, didRegistryAddress, chainId } = this.decodeDid(
+      attribute.did
+    );
     if (chainId.toLowerCase() !== CHAIN_ID.toLowerCase()) {
       const message = ErrorsMessages.UNSUPPORTED_CHAIN_ID;
       this.log.info(message);
       throw new BadRequestError(message);
     }
 
-    const { relation } = accountIdAttribute;
+    const { relation } = attribute;
     if (!VM_RELATIONS.get(relation)) {
       const message = ErrorsMessages.INVALID_VM_RELATION_TYPE;
       this.log.info(message);
       throw new BadRequestError(message);
     }
-    const algorithm = 'esecp256k1rm'; // EcdsaSecp256k1RecoveryMethod2020
-    const keyAttrDidController = accountIdAttribute.did; // defaulting to main did
-    const encodingMethod = 'hex';
+    const keyAttrDidController = attribute.did; // defaulting to main did
 
-    // asse/did/esecp256k1rm/cbor
+    // asse/did/esecp256k1rm/hex
     const name = `${relation}/${keyAttrDidController}/${algorithm}/${encodingMethod}`;
-    const value = accountIdAttribute.blockchainAccountId;
     const methodName = 'setAttribute';
-    const validity = accountIdAttribute.exp;
     const setAttributeMethodSignature = [
       `function ${methodName}(address,bytes,bytes,uint256) public`
     ];
@@ -372,7 +356,7 @@ export abstract class DidService implements DidLacService {
       address,
       toUtf8Bytes(name),
       value,
-      validity
+      attribute.exp
     ]);
     const didControllerAddress =
       await this.didRegistryContractInterface.lookupController(address);
