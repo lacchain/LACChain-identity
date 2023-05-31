@@ -26,6 +26,8 @@ export enum ErrorsMessages {
   INVALID_EXPIRATION_DAYS = 'Valid days must be greater than zero',
   INVALID_JWK_TYPE = 'Invalid Jwk type',
   INVALID_VM_RELATION_TYPE = 'Invalid verification method relation type',
+  UNSUPPORTED_ATTRIBUTE_ENCODING_METHOD = 'Unsupported attribute encoding',
+  INVALID_DELEGATE_TYPE = 'Invalid delegate type',
   INVALID_X509_SERIAL_NUMBER = 'Invalid x509 serial number',
   INVALID_X509_SUBJECT = 'Invalid x509 subject',
   X509_KEY_USAGE_LENGTH_ERROR = 'Invalid key usage length array',
@@ -34,7 +36,8 @@ export enum ErrorsMessages {
   X509_EXPIRED_CERTIFICATE = 'Certificate has expired',
   X509_INVALID_ORGANIZATION_SUBJECT = 'Invalid or organization subject',
   X509_INVALID_COUNTRY = 'Invalid or certificate country',
-  X509_INVALID_COMMON_NAME = 'Invalid x509 CN name'
+  X509_INVALID_COMMON_NAME = 'Invalid x509 CN name',
+  ATTRIBUTE_VALUE_ERROR = 'Attribute value is not an address'
 }
 
 export const Errors = {

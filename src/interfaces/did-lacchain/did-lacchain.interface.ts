@@ -1,4 +1,45 @@
 import { X509Certificate } from 'crypto';
+export interface IOnchainDelegate {
+  did: string;
+  exp: number;
+  type: string;
+  delegateAddress: string;
+}
+
+export interface INewOnchainDelegate {
+  did: string;
+  validDays: number;
+  type: string;
+}
+
+export interface INewAccountIdAttribute {
+  did: string;
+  validDays: number;
+  relation: string;
+}
+
+export interface IAccountIdAttribute {
+  did: string;
+  exp: number;
+  relation: string;
+  blockchainAccountId: string;
+}
+
+export interface IGenericAttributeFields {
+  did: string;
+  exp: number;
+  relation: string;
+  algorithm: string;
+  encodingMethod: string;
+  value: any;
+}
+
+export interface IAddAccountIdAttribute {
+  did: string;
+  validDays: number;
+  relation: string;
+  address: string;
+}
 
 export interface IJwkAttribute {
   did: string;

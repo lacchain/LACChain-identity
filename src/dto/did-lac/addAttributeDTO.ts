@@ -53,3 +53,24 @@ export class EcJwkAttributeDTO {
   @IsObject()
   ecJwk!: EcJwkDTO;
 }
+
+export class AccountIdAttributeDTO {
+  @IsString()
+  did!: string;
+  @IsNumber()
+  validDays!: number;
+  @IsString()
+  relation!: string;
+  @IsString()
+  address!: string;
+  // -> thus algorithm is esecp256k1rm -> EcdsaSecp256k1RecoveryMethod2020
+}
+
+export class NewAccountIdAttributeDTO {
+  @IsString()
+  did!: string;
+  @IsNumber()
+  validDays!: number;
+  @IsString()
+  relation!: string;
+}

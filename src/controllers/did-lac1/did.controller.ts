@@ -9,7 +9,7 @@ import { Service } from 'typedi';
 import { DidLac1Service } from '@services/did-lac/didLac1.service';
 import { ErrorsMessages } from '@constants/errorMessages';
 
-@JsonController('/did-lac1')
+@JsonController('/did/lac1')
 @Service()
 export class DidLac1Controller {
   constructor(private readonly didService: DidLac1Service) {}
