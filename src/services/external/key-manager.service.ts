@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import fetch from 'node-fetch';
 import {
-  IS_DEPENDENT_SERVICE,
+  LACPASS_IDENTITY_IS_DEPENDENT_SERVICE,
   KEY_MANAGER_BASE_URL,
   SECP256K1_KEY,
   SECP256K1_SIGN_ETHEREUM_TRANSACTION,
@@ -34,7 +34,7 @@ export class KeyManagerService {
   private secp256k1SignLacchainTransactionService: Secp256k1SignLacchainTransactionService | null;
   log = log4TSProvider.getLogger('KeyManagerService');
   constructor() {
-    if (IS_DEPENDENT_SERVICE !== 'true') {
+    if (LACPASS_IDENTITY_IS_DEPENDENT_SERVICE !== 'true') {
       this.log.info('Configuring key-manager library usage');
       this.createSecp256k1Key = this.createSecp256k1KeyByLib;
       const S = require('lacpass-key-manager').Secp256k1DbService;

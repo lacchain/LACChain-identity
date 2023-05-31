@@ -10,7 +10,7 @@ import {
   TYPEORM_MIGRATIONS_RUN,
   PRODUCTION_ENV,
   TYPEORM_TYPE,
-  IS_DEPENDENT_SERVICE,
+  LACPASS_IDENTITY_IS_DEPENDENT_SERVICE,
   log4TSProvider
 } from '@config';
 
@@ -44,7 +44,7 @@ const config: ConnectionOptions = {
   }
 };
 
-if (IS_DEPENDENT_SERVICE !== 'true') {
+if (LACPASS_IDENTITY_IS_DEPENDENT_SERVICE !== 'true') {
   log.info('Importing entities from external components');
   config.entities?.push(Secp256k1);
   // eslint-disable-next-line max-len
