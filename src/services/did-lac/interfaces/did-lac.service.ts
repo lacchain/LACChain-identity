@@ -2,7 +2,8 @@ import {
   IJwkEcAttribute,
   IJwkRsaAttribute,
   INewAccountIdAttribute,
-  INewOnchainDelegate
+  INewOnchainDelegate,
+  IX509Attribute
 } from 'src/interfaces/did-lacchain/did-lacchain.interface';
 import { DidService } from '../../interfaces/did.service';
 // eslint-disable-next-line max-len
@@ -25,4 +26,8 @@ export interface DidLacService extends DidService {
   addNewEthereumAccountIdAttribute(
     newAccountIdAttribute: INewAccountIdAttribute
   ): Promise<INewDelegateResponse>;
+  rawAddAttributeFromX509Certificate(
+    formData: any,
+    x509Cert: Express.Multer.File
+  ): Promise<IX509Attribute>;
 }

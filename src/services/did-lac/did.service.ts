@@ -226,7 +226,7 @@ export abstract class DidService implements DidLacService {
   async rawAddAttributeFromX509Certificate(
     formData: any,
     x509Cert: Express.Multer.File
-  ) {
+  ): Promise<IX509Attribute> {
     const { did, relation } = this._validateAndExtractDidFromObject(formData);
     const x509 = new X509Certificate(x509Cert.buffer);
     return this.addJwkFromPem({
