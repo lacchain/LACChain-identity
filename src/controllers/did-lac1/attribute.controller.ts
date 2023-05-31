@@ -8,8 +8,8 @@ import {
 import { Service } from 'typedi';
 import { ErrorsMessages } from '../../constants/errorMessages';
 import {
-  EcJwkAttributeDTO,
-  RsaJwkAttributeDTO
+  AccountIdAttributeDTO,
+  NewAccountIdAttributeDTO
 } from '../../dto/did-lac/addAttributeDTO';
 import { DidLac1Service } from '@services/did-lac/didLac1.service';
 
@@ -18,18 +18,18 @@ import { DidLac1Service } from '@services/did-lac/didLac1.service';
 export class DidLac1AttributeController {
   constructor(private readonly didService: DidLac1Service) {}
 
-  @Post('/add/jwk/rsa')
-  async addRsaJwkAttribute(
-    @Body({ validate: true }) attribute: RsaJwkAttributeDTO
-  ): Promise<any> {
-    try {
-      return this.didService.addRsaJwkAttribute(attribute);
-    } catch (error: any) {
-      throw new BadRequestError(
-        error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
+  // @Post('/add/jwk/rsa')
+  // async addRsaJwkAttribute(
+  //   @Body({ validate: true }) attribute: RsaJwkAttributeDTO
+  // ): Promise<any> {
+  //   try {
+  //     return this.didService.addRsaJwkAttribute(attribute);
+  //   } catch (error: any) {
+  //     throw new BadRequestError(
+  //       error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR
+  //     );
+  //   }
+  // }
 
   @Post('/add/jwk-from-x509certificate')
   async addAttributeFromX509Certificate(
@@ -48,12 +48,38 @@ export class DidLac1AttributeController {
     }
   }
 
-  @Post('/add/jwk/ec')
-  async addEcJwkAttribute(
-    @Body({ validate: true }) attribute: EcJwkAttributeDTO
+  // @Post('/add/jwk/ec')
+  // async addEcJwkAttribute(
+  //   @Body({ validate: true }) attribute: EcJwkAttributeDTO
+  // ): Promise<any> {
+  //   try {
+  //     return this.didService.addEcJwkAttribute(attribute);
+  //   } catch (error: any) {
+  //     throw new BadRequestError(
+  //       error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR
+  //     );
+  //   }
+  // }
+
+  @Post('/add/delegate/address')
+  async addEthereumAccountAttribute(
+    @Body({ validate: true }) attribute: AccountIdAttributeDTO
   ): Promise<any> {
     try {
-      return this.didService.addEcJwkAttribute(attribute);
+      return this.didService.addEthereumAccountIdAttribute(attribute);
+    } catch (error: any) {
+      throw new BadRequestError(
+        error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  @Post('/add/delegate/address/new')
+  async addNewEthereumAccountAttribute(
+    @Body({ validate: true }) attribute: NewAccountIdAttributeDTO
+  ): Promise<any> {
+    try {
+      return this.didService.addNewEthereumAccountIdAttribute(attribute);
     } catch (error: any) {
       throw new BadRequestError(
         error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR

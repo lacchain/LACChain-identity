@@ -35,7 +35,8 @@ export enum ErrorsMessages {
   X509_EXPIRED_CERTIFICATE = 'Certificate has expired',
   X509_INVALID_ORGANIZATION_SUBJECT = 'Invalid or organization subject',
   X509_INVALID_COUNTRY = 'Invalid or certificate country',
-  X509_INVALID_COMMON_NAME = 'Invalid x509 CN name'
+  X509_INVALID_COMMON_NAME = 'Invalid x509 CN name',
+  ATTRIBUTE_VALUE_ERROR = 'Attribute value is not an address'
 }
 
 export const Errors = {

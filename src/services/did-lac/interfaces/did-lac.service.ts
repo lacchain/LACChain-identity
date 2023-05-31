@@ -1,11 +1,12 @@
 import {
   IJwkEcAttribute,
   IJwkRsaAttribute,
+  INewAccountIdAttribute,
   INewOnchainDelegate
 } from 'src/interfaces/did-lacchain/did-lacchain.interface';
 import { DidService } from '../../interfaces/did.service';
 // eslint-disable-next-line max-len
-import { INewOnchainDelegateResponse } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
+import { INewDelegateResponse } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
 
 export type didLacAttributes = {
   address: string;
@@ -20,5 +21,8 @@ export interface DidLacService extends DidService {
   decodeDid(did: string): didLacAttributes;
   createNewOnchainDelegate(
     newOnchainDelegate: INewOnchainDelegate
-  ): Promise<INewOnchainDelegateResponse>;
+  ): Promise<INewDelegateResponse>;
+  addNewEthereumAccountIdAttribute(
+    newAccountIdAttribute: INewAccountIdAttribute
+  ): Promise<INewDelegateResponse>;
 }

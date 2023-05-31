@@ -12,6 +12,26 @@ export interface INewOnchainDelegate {
   type: string;
 }
 
+export interface INewAccountIdAttribute {
+  did: string;
+  validDays: number;
+  relation: string;
+}
+
+export interface IAccountIdAttribute {
+  did: string;
+  exp: number;
+  relation: string;
+  blockchainAccountId: string;
+}
+
+export interface IAddAccountIdAttribute {
+  did: string;
+  validDays: number;
+  relation: string;
+  address: string;
+}
+
 export interface IJwkAttribute {
   did: string;
   jwk: any;

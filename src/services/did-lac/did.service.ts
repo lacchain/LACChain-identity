@@ -11,16 +11,19 @@ import {
   getRpcUrl,
   getNodeAddress
 } from '../../config';
-import { Interface, keccak256, toUtf8Bytes } from 'ethers/lib/utils';
+import { Interface, isAddress, keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import DIDRegistryContractInterface from './did-registry';
 import { BadRequestError } from 'routing-controllers';
 import { DidLacService, didLacAttributes } from './interfaces/did-lac.service';
 import { ErrorsMessages } from '../../constants/errorMessages';
 import {
+  IAccountIdAttribute,
+  IAddAccountIdAttribute,
   IJwkAttribute,
   IJwkAttribute1,
   IJwkEcAttribute,
   IJwkRsaAttribute,
+  INewAccountIdAttribute,
   INewOnchainDelegate,
   IOnchainDelegate,
   IX509Attribute
@@ -38,7 +41,7 @@ import {
 } from '../../constants/did-web/lac/didVerificationMethodParams';
 import { X509Certificate } from 'crypto';
 // eslint-disable-next-line max-len
-import { INewOnchainDelegateResponse } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
+import { INewDelegateResponse } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
 
 @Service()
 export abstract class DidService implements DidLacService {
@@ -83,7 +86,7 @@ export abstract class DidService implements DidLacService {
   }
   async createNewOnchainDelegate(
     newOnchainDelegate: INewOnchainDelegate
-  ): Promise<INewOnchainDelegateResponse> {
+  ): Promise<INewDelegateResponse> {
     const { did, validDays, type } = newOnchainDelegate;
     const delegateDid = (await this.createDid()).did;
     const delegateAddress = this.decodeDid(delegateDid).address;
@@ -272,6 +275,95 @@ export abstract class DidService implements DidLacService {
     const value = encode(jwk);
     const methodName = 'setAttribute';
     const validity = jwkAttribute.exp;
+    const setAttributeMethodSignature = [
+      `function ${methodName}(address,bytes,bytes,uint256) public`
+    ];
+    const setAttributeInterface = new Interface(setAttributeMethodSignature);
+    const encodedData = setAttributeInterface.encodeFunctionData(methodName, [
+      address,
+      toUtf8Bytes(name),
+      value,
+      validity
+    ]);
+    const didControllerAddress =
+      await this.didRegistryContractInterface.lookupController(address);
+    const tx: ITransaction = {
+      from: didControllerAddress,
+      to: didRegistryAddress,
+      data: encodedData
+    };
+    return this.lacchainLib.signAndSend(tx);
+  }
+
+  async addNewEthereumAccountIdAttribute(
+    newAccountIdAttribute: INewAccountIdAttribute
+  ): Promise<INewDelegateResponse> {
+    const { did, validDays, relation } = newAccountIdAttribute;
+    const delegateDid = (await this.createDid()).did;
+    const delegateAddress = this.decodeDid(delegateDid).address;
+    const exp = Math.floor(Date.now() / 1000) + 86400 * validDays;
+    const accountIdAttribute: IAccountIdAttribute = {
+      did,
+      exp,
+      relation,
+      blockchainAccountId: delegateAddress
+    };
+    const txResponse = await this._addEthereumAccountIdAttribute(
+      accountIdAttribute
+    );
+    return {
+      ...txResponse,
+      delegateDid,
+      delegateAddress
+    } as INewDelegateResponse;
+  }
+
+  async addEthereumAccountIdAttribute(
+    accountIdAttribute: IAddAccountIdAttribute
+  ): Promise<any> {
+    const exp =
+      Math.floor(Date.now() / 1000) + 86400 * accountIdAttribute.validDays;
+    const args: IAccountIdAttribute = {
+      did: accountIdAttribute.did,
+      exp,
+      relation: accountIdAttribute.relation,
+      blockchainAccountId: accountIdAttribute.address
+    };
+    return this._addEthereumAccountIdAttribute(args);
+  }
+
+  private async _addEthereumAccountIdAttribute(
+    accountIdAttribute: IAccountIdAttribute
+  ): Promise<any> {
+    const { address, didRegistryAddress, chainId } = this.decodeDid(
+      accountIdAttribute.did
+    );
+    if (!isAddress(accountIdAttribute.blockchainAccountId)) {
+      const message = ErrorsMessages.ATTRIBUTE_VALUE_ERROR;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+    if (chainId.toLowerCase() !== CHAIN_ID.toLowerCase()) {
+      const message = ErrorsMessages.UNSUPPORTED_CHAIN_ID;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+
+    const { relation } = accountIdAttribute;
+    if (!VM_RELATIONS.get(relation)) {
+      const message = ErrorsMessages.INVALID_VM_RELATION_TYPE;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+    const algorithm = 'esecp256k1rm'; // EcdsaSecp256k1RecoveryMethod2020
+    const keyAttrDidController = accountIdAttribute.did; // defaulting to main did
+    const encodingMethod = 'hex';
+
+    // asse/did/esecp256k1rm/cbor
+    const name = `${relation}/${keyAttrDidController}/${algorithm}/${encodingMethod}`;
+    const value = accountIdAttribute.blockchainAccountId;
+    const methodName = 'setAttribute';
+    const validity = accountIdAttribute.exp;
     const setAttributeMethodSignature = [
       `function ${methodName}(address,bytes,bytes,uint256) public`
     ];
