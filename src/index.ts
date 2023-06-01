@@ -11,3 +11,5 @@ export * from './dto/did-lac/addAttributeDTO';
 export * from './dto/did-lac/delegateDTO';
 export * from './interfaces/did-lacchain/did-lacchain.interface';
 export * from './interfaces/did-lacchain/did-lacchain-response.interface';
+export * from './services/did-lac/lacchain/lacchain-ethers';
+export * from './interfaces/ethereum/transaction';
