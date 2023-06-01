@@ -83,7 +83,7 @@
     "express": "^4.17.3",
     "express-formidable": "^1.2.0",
     "express-rate-limit": "^6.3.0",
-    "helmet": "^5.0.2",
+    "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.0",
     "lacpass-key-manager": "^0.0.17",
     "morgan": "^1.10.0",
