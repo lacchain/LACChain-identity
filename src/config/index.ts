@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import {
   DEFAULT_DOMAIN_NAME,
   DEFAULT_REGISTRY,
@@ -12,7 +13,7 @@ import { Log4TSProvider } from 'typescript-logging-log4ts-style';
 config({ path: `.env.${process.env.ENV || 'dev'}` });
 
 export const log4TSProvider = Log4TSProvider.createProvider(
-  'IdentityLog4Provider',
+  'Log4IdentityProvider' + randomUUID(),
   {
     level: LogLevel.Debug,
     groups: [
