@@ -37,7 +37,9 @@ export enum ErrorsMessages {
   X509_INVALID_ORGANIZATION_SUBJECT = 'Invalid or organization subject',
   X509_INVALID_COUNTRY = 'Invalid or certificate country',
   X509_INVALID_COMMON_NAME = 'Invalid x509 CN name',
-  ATTRIBUTE_VALUE_ERROR = 'Attribute value is not an address'
+  ATTRIBUTE_VALUE_ERROR = 'Attribute value is not an address',
+  // eslint-disable-next-line max-len
+  LACCHAIN_CONTRACT_TRANSACTION_ERROR = 'There was an error, there may be an issue with the params you are sending'
 }
 
 export const Errors = {

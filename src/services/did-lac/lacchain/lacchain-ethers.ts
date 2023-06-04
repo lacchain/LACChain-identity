@@ -6,6 +6,8 @@ import {
   IEthereumTransactionResponse,
   ITransaction
 } from 'src/interfaces/ethereum/transaction';
+import { BadRequestError } from 'routing-controllers';
+import { ErrorsMessages } from '../../../constants/errorMessages';
 
 export class LacchainLib {
   log = log4TSProvider.getLogger('lacchainUtils');
@@ -36,6 +38,14 @@ export class LacchainLib {
     const txResponse = await this.provider.sendTransaction(
       signedTx.signedTransaction
     );
+    this.log.info('waiting for transaction response...');
+    try {
+      await txResponse.wait();
+    } catch (err: any) {
+      throw new BadRequestError(
+        ErrorsMessages.LACCHAIN_CONTRACT_TRANSACTION_ERROR
+      );
+    }
     this.log.info('Transaction successfully sent, txHash', txResponse.hash);
     return { txHash: txResponse.hash };
   }
