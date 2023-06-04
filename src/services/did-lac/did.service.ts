@@ -121,7 +121,7 @@ export abstract class DidService implements DidLacService {
     const name = type;
     const value = delegateAddress;
 
-    const methodName = 'setDelegate';
+    const methodName = 'addDelegate';
     const methodSignature = [
       `function ${methodName}(address,bytes32,address,uint256) public`
     ];
