@@ -34,11 +34,11 @@ echo "Did was created: $did"
 ```sh
 ## input variables
 path_to_crt=../certs/DSC/DSC.crt # you should point to the public pem certificate that represents the signing certificate used to sign health related data
-did="did:lac1:1iT5mqjxfSLyV24tHNgPwg5KMixYdP2FUHRCkir8Sr1RBepGA2da6peZgyB48tFUAdPy" # replace with the did previously created
+did="did:lac1:1iT4ksoK9qcxYYe8vGu2fZEDsYHCkJ7FkpxMeSJUrgLRDMmH3g5hKGry4H9bqGpZJPpB" # replace with the did previously created
 
 
 # process
-add_pem_certificate_url="$api_url"/api/v1/did-lac1/attribute/add/jwk-from-x509certificate
+add_pem_certificate_url="$api_url"/api/v1/did/lac1/attribute/add/jwk-from-x509certificate
 relation=asse
 data='{"did":'"\"$did\""', "relation":'"\"$relation\""'}'
 curl -X 'POST' ${add_pem_certificate_url} -H 'accept: application/json' -F x509Cert=@$path_to_crt -F data=$data
