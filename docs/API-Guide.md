@@ -43,3 +43,19 @@ relation=asse
 data='{"did":'"\"$did\""', "relation":'"\"$relation\""'}'
 curl -X 'POST' ${add_pem_certificate_url} -H 'accept: application/json' -F x509Cert=@$path_to_crt -F data=$data
 ```
+
+4. Disassociate an x509 Certificate from a Did
+
+```sh
+## input variables
+path_to_crt=../certs/DSC/DSC.crt # you should point to the public pem certificate that represents the signing certificate used to sign health related data
+did="did:lac1:1iT5SDUTHiVkK8ESyuH9VyKYmURs2VWk7xcCXPG2kGy8Uw79miZ5MAsjL8XWhtnZQoWh" # replace with the did previously created
+compromised=false
+backwardRevocationDays=0 # backward revocation days
+
+# process
+disassociate_pem_certificate_url="$api_url"/api/v1/did/lac1/attribute/revoke/jwk-from-x509certificate
+relation=asse
+data='{"did":'"\"$did\""', "relation":'"\"$relation\""', "compromised":'$compromised', "backwardRevocationDays":'$backwardRevocationDays'}'
+curl -X 'DELETE' ${disassociate_pem_certificate_url} -H 'accept: application/json' -F x509Cert=@$path_to_crt -F data=$data
+```
