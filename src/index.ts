@@ -7,7 +7,7 @@ export {
 export { DidService, did as DidType } from './services/interfaces/did.service';
 export { Did as DidEntity } from './entities/did.entity';
 export { Secp256k1 as Secp256k1Entity } from 'lacpass-key-manager';
-export * from './dto/did-lac/addAttributeDTO';
+export * from './dto/did-lac/attributeDTO';
 export * from './dto/did-lac/delegateDTO';
 export * from './interfaces/did-lacchain/did-lacchain.interface';
 export * from './interfaces/did-lacchain/did-lacchain-response.interface';

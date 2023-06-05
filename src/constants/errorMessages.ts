@@ -39,7 +39,9 @@ export enum ErrorsMessages {
   X509_INVALID_COMMON_NAME = 'Invalid x509 CN name',
   ATTRIBUTE_VALUE_ERROR = 'Attribute value is not an address',
   // eslint-disable-next-line max-len
-  LACCHAIN_CONTRACT_TRANSACTION_ERROR = 'There was an error, there may be an issue with the params you are sending'
+  LACCHAIN_CONTRACT_TRANSACTION_ERROR = 'There was an error, there may be an issue with the params you are sending',
+  // eslint-disable-next-line max-len
+  UNEXPECTED_RESPONSE_IN_SUCCESSFUL_TRANSACTION_ERROR = 'Transaction was successfully completed but received an unexpected response'
 }
 
 export const Errors = {

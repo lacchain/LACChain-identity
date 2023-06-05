@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDefined,
   IsNumber,
   IsObject,
@@ -74,3 +75,29 @@ export class NewAccountIdAttributeDTO {
   @IsString()
   relation!: string;
 }
+
+export class RevokeAttributeDTO {
+  @IsString()
+  did!: string;
+  @IsString()
+  relation!: string;
+  @IsNumber()
+  backwardRevocationDays!: number;
+  @IsDefined()
+  @IsBoolean()
+  compromised!: boolean;
+}
+
+// export class RevokeAttributeValidator {
+//   @IsString()
+//   did!: string;
+//   @IsDefined()
+//   @Type(() => X509Certificate)
+//   x509!: X509Certificate;
+//   @IsString()
+//   relation!: string;
+//   @IsNumber()
+//   backwardRevocationDays!: number;
+//   @IsBoolean()
+//   compromised!: boolean;
+// }
