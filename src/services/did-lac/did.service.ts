@@ -5,15 +5,14 @@ import { KeyManagerService } from '../external/key-manager.service';
 import { EntityMapper } from '@clients/mapper/entityMapper.service';
 import {
   CHAIN_ID,
-  getChainId,
   log4TSProvider,
-  resolveDidRegistryAddress,
   getRpcUrl,
-  getNodeAddress
+  getNodeAddress,
+  resolveChainRegistry
 } from '../../config';
 import { Interface, isAddress, keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import DIDRegistryContractInterface from './did-registry';
-import { BadRequestError } from 'routing-controllers';
+import { BadRequestError, InternalServerError } from 'routing-controllers';
 import { DidLacService, didLacAttributes } from './interfaces/did-lac.service';
 import { ErrorsMessages } from '../../constants/errorMessages';
 import {
@@ -50,8 +49,13 @@ import {
 import { X509Certificate } from 'crypto';
 // eslint-disable-next-line max-len
 import { INewDelegateResponse } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
-import { RevokeAttributeDTO } from '@dto/did-lac/attributeDTO';
+import { RevokeAttributeDTO } from '../../dto/did-lac/attributeDTO';
 import { validateOrReject } from 'class-validator';
+import {
+  CHAIN_REGISTRY,
+  SUPPORTED_DID_TYPES
+} from '../../constants/did-web/lac/didRegistryAddresses';
+import { DidRegistryParams } from 'src/interfaces/did/did.generics';
 
 @Service()
 export abstract class DidService implements DidLacService {
@@ -61,36 +65,34 @@ export abstract class DidService implements DidLacService {
   );
   private readonly hex = require('base-x')('0123456789abcdef');
 
-  private readonly didEncodingVersion = '0001'; // constant for encoding
-  // eslint-disable-next-line max-len
-  private readonly didType = '0001'; // constant
+  private readonly didEncodingVersion: string;
+  private readonly didType: string;
 
   private readonly chainId: string;
   private readonly didRegistryAddress: string;
+
+  private readonly defaultDidRegistryParams: DidRegistryParams;
+
   private readonly rpcUrl: string;
   private readonly nodeAddress: string;
 
-  private readonly didIdentifier: string;
-
-  private didRegistryContractInterface: DIDRegistryContractInterface;
+  private readonly didMethod: string;
 
   private readonly lacchainLib: LacchainLib;
 
   log = log4TSProvider.getLogger('didService');
   private keyManagerService: KeyManagerService;
-  constructor(didIdentifier: string) {
+
+  constructor(didMethod: string) {
     this.keyManagerService = new KeyManagerService();
-    this.chainId = getChainId();
-    this.didRegistryAddress = resolveDidRegistryAddress();
-    this.didIdentifier = didIdentifier;
+    this.defaultDidRegistryParams = resolveChainRegistry();
+    this.didType = this.defaultDidRegistryParams.didType;
+    this.didEncodingVersion = this.defaultDidRegistryParams.didVersion;
+    this.chainId = this.defaultDidRegistryParams.chainId;
+    this.didRegistryAddress = this.defaultDidRegistryParams.didRegistryAddress;
+    this.didMethod = didMethod;
     this.rpcUrl = getRpcUrl();
     this.nodeAddress = getNodeAddress();
-    this.didRegistryContractInterface = new DIDRegistryContractInterface(
-      this.didRegistryAddress, // base did registry
-      this.rpcUrl,
-      undefined,
-      this.nodeAddress
-    );
     // TODO: factor providers in such way that did service is independent
     this.lacchainLib = new LacchainLib(this.nodeAddress, this.rpcUrl);
   }
@@ -140,8 +142,7 @@ export abstract class DidService implements DidLacService {
       value,
       exp
     ]);
-    const didControllerAddress =
-      await this.didRegistryContractInterface.lookupController(address);
+    const didControllerAddress = await this.lookupController(did);
     const tx: ITransaction = {
       from: didControllerAddress,
       to: didRegistryAddress,
@@ -445,8 +446,7 @@ export abstract class DidService implements DidLacService {
       value,
       attribute.exp
     ]);
-    const didControllerAddress =
-      await this.didRegistryContractInterface.lookupController(address);
+    const didControllerAddress = await this.lookupController(attribute.did);
     const tx: ITransaction = {
       from: didControllerAddress,
       to: didRegistryAddress,
@@ -513,7 +513,9 @@ export abstract class DidService implements DidLacService {
       compromised: attribute.compromised,
       didRegistryAddress
     };
-    return this.didRegistryContractInterface.revokeAttribute(revokeAttribute);
+    // get correct did interface
+    const didReg = this.findSupportedLacchainDidRegistry(attribute.did);
+    return didReg.revokeAttribute(revokeAttribute);
   }
 
   addAttribute(_did: string, _rsaPublicKey: string): Promise<any> {
@@ -521,14 +523,13 @@ export abstract class DidService implements DidLacService {
   }
 
   async getController(did: string): Promise<any> {
-    const { address, chainId } = this.decodeDid(did);
+    const { chainId } = this.decodeDid(did);
     if (chainId.toLowerCase() !== CHAIN_ID.toLowerCase()) {
       const message = ErrorsMessages.UNSUPPORTED_CHAIN_ID;
       this.log.info(message);
       throw new BadRequestError(message);
     }
-    const didController =
-      await this.didRegistryContractInterface.lookupController(address);
+    const didController = await this.lookupController(did);
     return { controller: didController };
   }
 
@@ -541,7 +542,7 @@ export abstract class DidService implements DidLacService {
     const did = EntityMapper.mapTo(Did, {});
     did.keyId = key.keyId;
     did.did =
-      this.didIdentifier +
+      this.didMethod +
       this.encode(
         this.didType,
         this.chainId,
@@ -553,7 +554,7 @@ export abstract class DidService implements DidLacService {
   }
 
   decodeDid(did: string): didLacAttributes {
-    const trimmed = did.replace(this.didIdentifier, '');
+    const trimmed = did.replace(this.didMethod, '');
     const data = Buffer.from(this.base58.decode(trimmed));
     const len = data.length;
     const encodedPayload = data.subarray(0, len - 4);
@@ -572,7 +573,6 @@ export abstract class DidService implements DidLacService {
       this.log.info(message);
       throw new BadRequestError(message);
     }
-
     if (didType !== this.didType) {
       // TODO handle better versioning
       const message = 'Unsupported did type';
@@ -591,7 +591,14 @@ export abstract class DidService implements DidLacService {
       c = c.substring(1);
     }
     const chainId = '0x' + c;
-    return { address, didRegistryAddress, chainId, version, didType };
+    return {
+      address,
+      didMethod: this.didMethod,
+      didRegistryAddress,
+      chainId,
+      version,
+      didType
+    };
   }
 
   // todo: validate parameters
@@ -691,5 +698,43 @@ export abstract class DidService implements DidLacService {
   stringToBytes32(str: string): string {
     const buffStr = '0x' + Buffer.from(str).slice(0, 32).toString('hex');
     return buffStr + '0'.repeat(66 - buffStr.length);
+  }
+
+  async lookupController(did: string): Promise<string> {
+    // get did registry interface to interact with
+    const registry = this.findSupportedLacchainDidRegistry(did);
+    const identity = this.decodeDid(did).address;
+    return registry.lookupController(identity);
+  }
+
+  /**
+   * Verifies that the passed did is supported by checking the CHAIN_ID.
+   * Returns an instance of a supported verification otherwise throws an error.
+   * DID TYPE and DID Version
+   * @param {string} did
+   * @return {DidRegistryContractInterface}
+   */
+  findSupportedLacchainDidRegistry(did: string): DIDRegistryContractInterface {
+    const { chainId, didType, version, didRegistryAddress } =
+      this.decodeDid(did);
+    const foundDidRegistry = CHAIN_REGISTRY.get(chainId);
+    if (!foundDidRegistry || this.chainId !== chainId) {
+      // to improve chainId as an array
+      throw new BadRequestError(ErrorsMessages.UNSUPPORTED_CHAIN_ID_IN_DID);
+    }
+    const typeDetails = SUPPORTED_DID_TYPES.get(didType);
+    if (!typeDetails) {
+      throw new InternalServerError(ErrorsMessages.UNSUPPORTED_DID_TYPE);
+    }
+    const isVersion = typeDetails.get(version);
+    if (!isVersion) {
+      throw new BadRequestError(ErrorsMessages.UNSUPPORTED_DID_VERSION);
+    }
+    return new DIDRegistryContractInterface(
+      didRegistryAddress,
+      this.rpcUrl,
+      undefined,
+      this.nodeAddress
+    );
   }
 }

@@ -1,14 +1,16 @@
 import { randomUUID } from 'crypto';
 import {
+  DEFAULT_DID_REGISTRY,
   DEFAULT_DOMAIN_NAME,
-  DEFAULT_REGISTRY,
+  DID_CODE,
   DOMAIN_NAMES,
-  REGISTRY
+  SUPPORTED_DID_TYPES
 } from '../constants/did-web/lac/didRegistryAddresses';
 import { config } from 'dotenv';
 import { ethers } from 'ethers';
 import { LogLevel } from 'typescript-logging';
 import { Log4TSProvider } from 'typescript-logging-log4ts-style';
+import { DidRegistryParams } from 'src/interfaces/did/did.generics';
 
 config({ path: `.env.${process.env.ENV || 'dev'}` });
 
@@ -64,35 +66,87 @@ export const TESTING_ENV = process.env.ENV === 'test';
 export const CI_ENV = process.env.ENV === 'ci';
 export const JWT_SECRET_DEFAULT = 'some-secret-string-default';
 
-export const resolveDidRegistryAddress = (
-  didRegistryAddress = process.env.DID_REGISTRY_ADDRESS
-): string => {
-  // const didRegistryAddress = process.env.DID_REGISTRY_ADDRESS;
-  if (didRegistryAddress) {
-    if (!ethers.utils.isAddress(didRegistryAddress)) {
+export const resolveChainRegistry = (): DidRegistryParams => {
+  const supportedChainId = getChainId();
+  const customDidRegEnv = process.env.CUSTOM_DID_REG;
+  // 'didRegistryAddress,didType,didVersion,chainId'
+  if (!customDidRegEnv) {
+    // return default did registry
+    const defaultDidRegistry = DEFAULT_DID_REGISTRY.get(supportedChainId);
+    if (!defaultDidRegistry) {
       log.error(
-        'Specified DID_REGISTRY_ADDRESS',
-        DID_REGISTRY_ADDRESS,
-        'is not a valid address ... exiting'
+        'There is no default did registry for chainId ' + supportedChainId
       );
-      process.exit(1); // exiting since this is a critical error
+      process.exit(1);
     }
-    if (
-      didRegistryAddress &&
-      !REGISTRY.get(CHAIN_ID)?.find(el => el === didRegistryAddress)
-    ) {
-      log.info('Unknown specified did registry address ', didRegistryAddress);
-    }
-    log.info('Returning custom did registry address', didRegistryAddress);
-    return didRegistryAddress;
+    return {
+      ...defaultDidRegistry,
+      chainId: supportedChainId
+    };
   }
-  const wellKnownRegistryAddress = DEFAULT_REGISTRY.get(CHAIN_ID);
-  if (!wellKnownRegistryAddress) {
-    log.error('Could not find well-known registry address for chain', CHAIN_ID);
+  const customDidRegParam = customDidRegEnv.split(',');
+  if (customDidRegParam.length !== 4) {
+    log.error(
+      'Invalid number of param when reading CUSTOM_DID_REG environemt variable, read:',
+      customDidRegEnv
+    );
+    process.exit(1);
+  }
+  const [didRegistryAddress, didMethod, didVersion, chainId] =
+    customDidRegParam;
+  const didType = DID_CODE.get(didMethod);
+  if (!didType) {
+    log.error('did type not supported, read did method:', didMethod);
+    process.exit(1);
+  }
+  // validate type, version tuple is supported
+  const isSupportedDidType = SUPPORTED_DID_TYPES.get(didType);
+  if (
+    !isSupportedDidType ||
+    (isSupportedDidType && !isSupportedDidType.get(didVersion))
+  ) {
+    log.error(
+      'Unsupported did type/didVersion, read didType:',
+      didType,
+      'read didVersion:',
+      didVersion
+    );
+    process.exit(1);
+  }
+  // validate chainId is supported
+  if (chainId !== supportedChainId) {
+    log.error(
+      'Unsupported chainId passed alongside custom did registry, read chainId:',
+      chainId,
+      'supported version:',
+      supportedChainId
+    );
+    process.exit(1);
+  }
+  // add registry
+  if (!ethers.utils.isAddress(didRegistryAddress)) {
+    log.error(
+      'Specified did registry address: ',
+      didRegistryAddress,
+      ', is not a valid address ... exiting'
+    );
     process.exit(1); // exiting since this is a critical error
   }
-  log.info('Returning default registry address', wellKnownRegistryAddress);
-  return wellKnownRegistryAddress;
+  log.info(
+    'Returning custom did registry address',
+    didRegistryAddress,
+    'chainId:',
+    chainId,
+    'didMethod:',
+    didMethod
+  );
+  return {
+    didRegistryAddress,
+    didMethod,
+    didType,
+    didVersion,
+    chainId: supportedChainId
+  };
 };
 
 export const resolveDidDomainName = (): string => {
@@ -120,7 +174,6 @@ export const resolveDidDomainName = (): string => {
   return defaultDomainName;
 };
 
-export const DID_REGISTRY_ADDRESS = resolveDidRegistryAddress();
 export const DOMAIN_NAME = resolveDidDomainName();
 
 export const {

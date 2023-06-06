@@ -19,7 +19,7 @@ api_url=http://localhost:3001 # Set LACPass API url
 2. Create a did
 
 ```sh
-create_did_url="$api_url"/api/v1/did-lac1
+create_did_url="$api_url"/api/v1/did/lac1
 r=`curl -s -X 'POST' \
   ${create_did_url} \
   -H 'accept: application/json' \
@@ -34,7 +34,7 @@ echo "Did was created: $did"
 ```sh
 ## input variables
 path_to_crt=../certs/DSC/DSC.crt # you should point to the public pem certificate that represents the signing certificate used to sign health related data
-did="did:lac1:1iT4ksoK9qcxYYe8vGu2fZEDsYHCkJ7FkpxMeSJUrgLRDMmH3g5hKGry4H9bqGpZJPpB" # replace with the did previously created
+did="did:lac1:1iT4XSXrcTkcUJ7mMgSW9eWubkNkShNLjfau6T3mSg6fyXAuj2DdaHW55eFQ6D9hjq7w" # replace with the did previously created
 
 
 # process
@@ -49,7 +49,7 @@ curl -X 'POST' ${add_pem_certificate_url} -H 'accept: application/json' -F x509C
 ```sh
 ## input variables
 path_to_crt=../certs/DSC/DSC.crt # you should point to the public pem certificate that represents the signing certificate used to sign health related data
-did="did:lac1:1iT5SDUTHiVkK8ESyuH9VyKYmURs2VWk7xcCXPG2kGy8Uw79miZ5MAsjL8XWhtnZQoWh" # replace with the did previously created
+did="did:lac1:1iT4XSXrcTkcUJ7mMgSW9eWubkNkShNLjfau6T3mSg6fyXAuj2DdaHW55eFQ6D9hjq7w" # replace with the did previously created
 compromised=false
 backwardRevocationDays=0 # backward revocation days
 

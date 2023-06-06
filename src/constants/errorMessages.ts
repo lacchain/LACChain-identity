@@ -41,7 +41,10 @@ export enum ErrorsMessages {
   // eslint-disable-next-line max-len
   LACCHAIN_CONTRACT_TRANSACTION_ERROR = 'There was an error, there may be an issue with the params you are sending',
   // eslint-disable-next-line max-len
-  UNEXPECTED_RESPONSE_IN_SUCCESSFUL_TRANSACTION_ERROR = 'Transaction was successfully completed but received an unexpected response'
+  UNEXPECTED_RESPONSE_IN_SUCCESSFUL_TRANSACTION_ERROR = 'Transaction was successfully completed but received an unexpected response',
+  UNSUPPORTED_CHAIN_ID_IN_DID = 'Unsupported chainId was found in DID',
+  UNSUPPORTED_DID_TYPE = 'Unsupported DID type',
+  UNSUPPORTED_DID_VERSION = 'Unsupported DID version'
 }
 
 export const Errors = {
