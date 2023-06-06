@@ -1,6 +1,6 @@
 {
   "name": "lacpass-identity",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "Rest api for laccpass identity manager",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",

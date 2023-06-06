@@ -19,7 +19,7 @@ api_url=http://localhost:3001 # Set LACPass API url
 2. Create a did
 
 ```sh
-create_did_url="$api_url"/api/v1/did-lac1
+create_did_url="$api_url"/api/v1/did/lac1
 r=`curl -s -X 'POST' \
   ${create_did_url} \
   -H 'accept: application/json' \
@@ -34,7 +34,7 @@ echo "Did was created: $did"
 ```sh
 ## input variables
 path_to_crt=../certs/DSC/DSC.crt # you should point to the public pem certificate that represents the signing certificate used to sign health related data
-did="did:lac1:1iT4ksoK9qcxYYe8vGu2fZEDsYHCkJ7FkpxMeSJUrgLRDMmH3g5hKGry4H9bqGpZJPpB" # replace with the did previously created
+did="did:lac1:1iT4XSXrcTkcUJ7mMgSW9eWubkNkShNLjfau6T3mSg6fyXAuj2DdaHW55eFQ6D9hjq7w" # replace with the did previously created
 
 
 # process
@@ -42,4 +42,20 @@ add_pem_certificate_url="$api_url"/api/v1/did/lac1/attribute/add/jwk-from-x509ce
 relation=asse
 data='{"did":'"\"$did\""', "relation":'"\"$relation\""'}'
 curl -X 'POST' ${add_pem_certificate_url} -H 'accept: application/json' -F x509Cert=@$path_to_crt -F data=$data
+```
+
+4. Disassociate an x509 Certificate from a Did
+
+```sh
+## input variables
+path_to_crt=../certs/DSC/DSC.crt # you should point to the public pem certificate that represents the signing certificate used to sign health related data
+did="did:lac1:1iT4XSXrcTkcUJ7mMgSW9eWubkNkShNLjfau6T3mSg6fyXAuj2DdaHW55eFQ6D9hjq7w" # replace with the did previously created
+compromised=false
+backwardRevocationDays=0 # backward revocation days
+
+# process
+disassociate_pem_certificate_url="$api_url"/api/v1/did/lac1/attribute/revoke/jwk-from-x509certificate
+relation=asse
+data='{"did":'"\"$did\""', "relation":'"\"$relation\""', "compromised":'$compromised', "backwardRevocationDays":'$backwardRevocationDays'}'
+curl -X 'DELETE' ${disassociate_pem_certificate_url} -H 'accept: application/json' -F x509Cert=@$path_to_crt -F data=$data
 ```

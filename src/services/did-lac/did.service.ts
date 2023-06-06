@@ -5,29 +5,34 @@ import { KeyManagerService } from '../external/key-manager.service';
 import { EntityMapper } from '@clients/mapper/entityMapper.service';
 import {
   CHAIN_ID,
-  getChainId,
   log4TSProvider,
-  resolveDidRegistryAddress,
   getRpcUrl,
-  getNodeAddress
+  getNodeAddress,
+  resolveChainRegistry
 } from '../../config';
 import { Interface, isAddress, keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import DIDRegistryContractInterface from './did-registry';
-import { BadRequestError } from 'routing-controllers';
+import { BadRequestError, InternalServerError } from 'routing-controllers';
 import { DidLacService, didLacAttributes } from './interfaces/did-lac.service';
 import { ErrorsMessages } from '../../constants/errorMessages';
 import {
+  CommonAttributeFields,
   IAccountIdAttribute,
   IAddAccountIdAttribute,
   IGenericAttributeFields,
+  IGenericRevokeAttributeFields,
   IJwkAttribute,
   IJwkAttribute1,
   IJwkEcAttribute,
+  IJwkRevokeAttribute,
+  IJwkRevokeAttribute1,
   IJwkRsaAttribute,
   INewAccountIdAttribute,
   INewOnchainDelegate,
   IOnchainDelegate,
-  IX509Attribute
+  IRevokeAttribute,
+  IX509Attribute,
+  IX509RevokeAttribute
 } from 'src/interfaces/did-lacchain/did-lacchain.interface';
 import {
   IEthereumTransactionResponse,
@@ -44,6 +49,13 @@ import {
 import { X509Certificate } from 'crypto';
 // eslint-disable-next-line max-len
 import { INewDelegateResponse } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
+import { RevokeAttributeDTO } from '../../dto/did-lac/attributeDTO';
+import { validateOrReject } from 'class-validator';
+import {
+  CHAIN_REGISTRY,
+  SUPPORTED_DID_TYPES
+} from '../../constants/did-web/lac/didRegistryAddresses';
+import { DidRegistryParams } from 'src/interfaces/did/did.generics';
 
 @Service()
 export abstract class DidService implements DidLacService {
@@ -53,36 +65,34 @@ export abstract class DidService implements DidLacService {
   );
   private readonly hex = require('base-x')('0123456789abcdef');
 
-  private readonly didEncodingVersion = '0001'; // constant for encoding
-  // eslint-disable-next-line max-len
-  private readonly didType = '0001'; // constant
+  private readonly didEncodingVersion: string;
+  private readonly didType: string;
 
   private readonly chainId: string;
   private readonly didRegistryAddress: string;
+
+  private readonly defaultDidRegistryParams: DidRegistryParams;
+
   private readonly rpcUrl: string;
   private readonly nodeAddress: string;
 
-  private readonly didIdentifier: string;
-
-  private didRegistryContractInterface: DIDRegistryContractInterface;
+  private readonly didMethod: string;
 
   private readonly lacchainLib: LacchainLib;
 
   log = log4TSProvider.getLogger('didService');
   private keyManagerService: KeyManagerService;
-  constructor(didIdentifier: string) {
+
+  constructor(didMethod: string) {
     this.keyManagerService = new KeyManagerService();
-    this.chainId = getChainId();
-    this.didRegistryAddress = resolveDidRegistryAddress();
-    this.didIdentifier = didIdentifier;
+    this.defaultDidRegistryParams = resolveChainRegistry();
+    this.didType = this.defaultDidRegistryParams.didType;
+    this.didEncodingVersion = this.defaultDidRegistryParams.didVersion;
+    this.chainId = this.defaultDidRegistryParams.chainId;
+    this.didRegistryAddress = this.defaultDidRegistryParams.didRegistryAddress;
+    this.didMethod = didMethod;
     this.rpcUrl = getRpcUrl();
     this.nodeAddress = getNodeAddress();
-    this.didRegistryContractInterface = new DIDRegistryContractInterface(
-      this.didRegistryAddress, // base did registry
-      this.rpcUrl,
-      undefined,
-      this.nodeAddress
-    );
     // TODO: factor providers in such way that did service is independent
     this.lacchainLib = new LacchainLib(this.nodeAddress, this.rpcUrl);
   }
@@ -132,8 +142,7 @@ export abstract class DidService implements DidLacService {
       value,
       exp
     ]);
-    const didControllerAddress =
-      await this.didRegistryContractInterface.lookupController(address);
+    const didControllerAddress = await this.lookupController(did);
     const tx: ITransaction = {
       from: didControllerAddress,
       to: didRegistryAddress,
@@ -177,7 +186,9 @@ export abstract class DidService implements DidLacService {
     return this._addJwkAttributeWithDays(jwkAttribute);
   }
 
-  async addJwkFromPem(x509Attribute: IX509Attribute): Promise<any> {
+  async addJwkFromPem(
+    x509Attribute: IX509Attribute
+  ): Promise<IEthereumTransactionResponse> {
     const { x509, did, relation } = x509Attribute;
     // TODO: verify key usage
     // console.log('key usage: ' + x509.keyUsage);
@@ -223,10 +234,37 @@ export abstract class DidService implements DidLacService {
     return this._addJwkAttribute(jwkAttr);
   }
 
+  async revokeJwkFromPem(
+    x509Attribute: IX509RevokeAttribute
+  ): Promise<IEthereumTransactionResponse> {
+    const { x509, did, relation, backwardRevocationDays, compromised } =
+      x509Attribute;
+    const serialNumber = x509.serialNumber;
+    if (serialNumber.length <= 0) {
+      throw new BadRequestError(ErrorsMessages.INVALID_X509_SERIAL_NUMBER);
+    }
+    const subject = x509.subject;
+    if (subject.length <= 0) {
+      throw new BadRequestError(ErrorsMessages.INVALID_X509_SUBJECT);
+    }
+    const revokeDeltaTime = Math.floor(backwardRevocationDays * 86400);
+    const pubKey = x509.publicKey;
+    const jwk = pubKey.export({ format: 'jwk' });
+    const extendedJwk = { ...jwk, x5c: [x509.raw.toString('base64')] };
+    const jwkAttr: IJwkRevokeAttribute1 = {
+      did,
+      jwk: extendedJwk,
+      relation,
+      revokeDeltaTime,
+      compromised
+    };
+    return this._revokeJwkAttribute(jwkAttr);
+  }
+
   async rawAddAttributeFromX509Certificate(
     formData: any,
     x509Cert: Express.Multer.File
-  ): Promise<IX509Attribute> {
+  ): Promise<IEthereumTransactionResponse> {
     const { did, relation } = this._validateAndExtractDidFromObject(formData);
     const x509 = new X509Certificate(x509Cert.buffer);
     return this.addJwkFromPem({
@@ -234,6 +272,22 @@ export abstract class DidService implements DidLacService {
       did,
       relation
     } as IX509Attribute);
+  }
+
+  async rawRevokeAttributeFromX509Certificate(
+    formData: any,
+    x509Cert: Express.Multer.File
+  ): Promise<IEthereumTransactionResponse> {
+    const { did, relation, backwardRevocationDays, compromised } =
+      await this._validateAndExtractDidAndRevokeParams(formData);
+    const x509 = new X509Certificate(x509Cert.buffer);
+    return this.revokeJwkFromPem({
+      x509,
+      did,
+      relation,
+      backwardRevocationDays,
+      compromised
+    } as IX509RevokeAttribute);
   }
 
   private async _addJwkAttributeWithDays(
@@ -251,7 +305,26 @@ export abstract class DidService implements DidLacService {
     return this._addJwkAttribute(mappedJwkAttribute);
   }
 
-  private async _addJwkAttribute(jwkAttribute: IJwkAttribute1): Promise<any> {
+  private async _revokeJwkAttributeWithDays(
+    jwkAttribute: IJwkRevokeAttribute
+  ): Promise<any> {
+    const backwardRevocationDays = jwkAttribute.backwardRevocationDays;
+    const revokeDeltaTime =
+      Math.floor(Date.now() / 1000) + 86400 * backwardRevocationDays;
+    const { did, jwk, relation, compromised } = jwkAttribute;
+    const mappedJwkAttribute: IJwkRevokeAttribute1 = {
+      did,
+      jwk,
+      relation,
+      revokeDeltaTime,
+      compromised
+    };
+    return this._revokeJwkAttribute(mappedJwkAttribute);
+  }
+
+  private async _addJwkAttribute(
+    jwkAttribute: IJwkAttribute1
+  ): Promise<IEthereumTransactionResponse> {
     const attribute: IGenericAttributeFields = {
       did: jwkAttribute.did,
       exp: jwkAttribute.exp,
@@ -261,6 +334,21 @@ export abstract class DidService implements DidLacService {
       value: encode(jwkAttribute.jwk)
     };
     return this._addAttribute(attribute);
+  }
+
+  private async _revokeJwkAttribute(
+    jwkAttribute: IJwkRevokeAttribute1
+  ): Promise<IEthereumTransactionResponse> {
+    const attribute: IGenericRevokeAttributeFields = {
+      did: jwkAttribute.did,
+      relation: jwkAttribute.relation,
+      algorithm: 'jwk',
+      encodingMethod: 'cbor',
+      value: encode(jwkAttribute.jwk),
+      revokeDeltaTime: jwkAttribute.revokeDeltaTime,
+      compromised: jwkAttribute.compromised
+    };
+    return this._revokeAttribute(attribute);
   }
 
   async addNewEthereumAccountIdAttribute(
@@ -321,7 +409,7 @@ export abstract class DidService implements DidLacService {
 
   private async _addAttribute(
     attribute: IGenericAttributeFields
-  ): Promise<any> {
+  ): Promise<IEthereumTransactionResponse> {
     const { algorithm, encodingMethod, value } = attribute;
     if (!ATTRIBUTE_ENCODING_METHODS.get(encodingMethod)) {
       const message = ErrorsMessages.UNSUPPORTED_ATTRIBUTE_ENCODING_METHOD;
@@ -358,8 +446,7 @@ export abstract class DidService implements DidLacService {
       value,
       attribute.exp
     ]);
-    const didControllerAddress =
-      await this.didRegistryContractInterface.lookupController(address);
+    const didControllerAddress = await this.lookupController(attribute.did);
     const tx: ITransaction = {
       from: didControllerAddress,
       to: didRegistryAddress,
@@ -368,21 +455,81 @@ export abstract class DidService implements DidLacService {
     return this.lacchainLib.signAndSend(tx);
   }
 
-  addAttribute(_did: string, _rsaPublicKey: string): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-
-  async getController(did: string): Promise<any> {
-    const { address, chainId } = this.decodeDid(did);
-    console.log(address, chainId);
-    console.log(CHAIN_ID);
+  private async _validateParamsAndGetCommonAttributeParams(
+    attribute: CommonAttributeFields
+  ): Promise<{
+    name: string;
+    identityAddress: string;
+    didRegistryAddress: string;
+  }> {
+    const { algorithm, encodingMethod } = attribute;
+    if (!ATTRIBUTE_ENCODING_METHODS.get(encodingMethod)) {
+      const message = ErrorsMessages.UNSUPPORTED_ATTRIBUTE_ENCODING_METHOD;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+    const { address, didRegistryAddress, chainId } = this.decodeDid(
+      attribute.did
+    );
     if (chainId.toLowerCase() !== CHAIN_ID.toLowerCase()) {
       const message = ErrorsMessages.UNSUPPORTED_CHAIN_ID;
       this.log.info(message);
       throw new BadRequestError(message);
     }
-    const didController =
-      await this.didRegistryContractInterface.lookupController(address);
+
+    const { relation } = attribute;
+    if (!VM_RELATIONS.get(relation)) {
+      const message = ErrorsMessages.INVALID_VM_RELATION_TYPE;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+    const keyAttrDidController = attribute.did;
+    // asse/did/esecp256k1rm/hex
+    const name = `${relation}/${keyAttrDidController}/${algorithm}/${encodingMethod}`;
+    return { name, identityAddress: address, didRegistryAddress };
+  }
+
+  private async _validateRevokeParamsAndGetCommonAttributeParams(
+    attribute: IGenericRevokeAttributeFields
+  ): Promise<{
+    name: string;
+    identityAddress: string;
+    didRegistryAddress: string;
+  }> {
+    return this._validateParamsAndGetCommonAttributeParams(attribute);
+  }
+
+  private async _revokeAttribute(
+    attribute: IGenericRevokeAttributeFields
+  ): Promise<IEthereumTransactionResponse> {
+    const { name, identityAddress, didRegistryAddress } =
+      await this._validateRevokeParamsAndGetCommonAttributeParams(attribute);
+
+    const revokeAttribute: IRevokeAttribute = {
+      identityAddress,
+      name,
+      value: attribute.value,
+      revokeDeltaTime: attribute.revokeDeltaTime,
+      compromised: attribute.compromised,
+      didRegistryAddress
+    };
+    // get correct did interface
+    const didReg = this.findSupportedLacchainDidRegistry(attribute.did);
+    return didReg.revokeAttribute(revokeAttribute);
+  }
+
+  addAttribute(_did: string, _rsaPublicKey: string): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  async getController(did: string): Promise<any> {
+    const { chainId } = this.decodeDid(did);
+    if (chainId.toLowerCase() !== CHAIN_ID.toLowerCase()) {
+      const message = ErrorsMessages.UNSUPPORTED_CHAIN_ID;
+      this.log.info(message);
+      throw new BadRequestError(message);
+    }
+    const didController = await this.lookupController(did);
     return { controller: didController };
   }
 
@@ -395,7 +542,7 @@ export abstract class DidService implements DidLacService {
     const did = EntityMapper.mapTo(Did, {});
     did.keyId = key.keyId;
     did.did =
-      this.didIdentifier +
+      this.didMethod +
       this.encode(
         this.didType,
         this.chainId,
@@ -407,7 +554,7 @@ export abstract class DidService implements DidLacService {
   }
 
   decodeDid(did: string): didLacAttributes {
-    const trimmed = did.replace(this.didIdentifier, '');
+    const trimmed = did.replace(this.didMethod, '');
     const data = Buffer.from(this.base58.decode(trimmed));
     const len = data.length;
     const encodedPayload = data.subarray(0, len - 4);
@@ -418,16 +565,15 @@ export abstract class DidService implements DidLacService {
       this.log.info(message);
       throw new BadRequestError(message);
     }
-    const version = data.subarray(0, 2);
-    const didType = data.subarray(2, 4);
-    if (version.toString('hex') !== this.didEncodingVersion) {
+    const version = data.subarray(0, 2).toString('hex');
+    const didType = data.subarray(2, 4).toString('hex');
+    if (version !== this.didEncodingVersion) {
       // TODO handle better versioning
       const message = 'Unsupported encoding version';
       this.log.info(message);
       throw new BadRequestError(message);
     }
-
-    if (didType.toString('hex') !== this.didType) {
+    if (didType !== this.didType) {
       // TODO handle better versioning
       const message = 'Unsupported did type';
       this.log.info(message);
@@ -445,7 +591,14 @@ export abstract class DidService implements DidLacService {
       c = c.substring(1);
     }
     const chainId = '0x' + c;
-    return { address, didRegistryAddress, chainId };
+    return {
+      address,
+      didMethod: this.didMethod,
+      didRegistryAddress,
+      chainId,
+      version,
+      didType
+    };
   }
 
   // todo: validate parameters
@@ -497,6 +650,32 @@ export abstract class DidService implements DidLacService {
     return JSON.parse(formData.data) as { did: string; relation: string };
   }
 
+  private async _validateAndExtractDidAndRevokeParams(formData: any): Promise<{
+    did: string;
+    relation: string;
+    compromised: boolean;
+    backwardRevocationDays: number;
+  }> {
+    if (!formData?.data) {
+      throw new BadRequestError(ErrorsMessages.BAD_REQUEST_ERROR);
+    }
+    if (Object.keys(formData?.data).length === 0) {
+      throw new BadRequestError(ErrorsMessages.BAD_REQUEST_ERROR);
+    }
+    const parsed = JSON.parse(formData.data);
+    const v = new RevokeAttributeDTO();
+    v.did = parsed.did;
+    v.relation = parsed.relation;
+    v.compromised = parsed.compromised;
+    v.backwardRevocationDays = parsed.backwardRevocationDays;
+    try {
+      await validateOrReject(v);
+    } catch (err: any) {
+      throw new BadRequestError(err);
+    }
+    return v;
+  }
+
   private _validateX509CertificateSubjectField(subject: string) {
     const orgRegex = /O=.+/i;
     const foundOrg = subject.search(orgRegex);
@@ -519,5 +698,43 @@ export abstract class DidService implements DidLacService {
   stringToBytes32(str: string): string {
     const buffStr = '0x' + Buffer.from(str).slice(0, 32).toString('hex');
     return buffStr + '0'.repeat(66 - buffStr.length);
+  }
+
+  async lookupController(did: string): Promise<string> {
+    // get did registry interface to interact with
+    const registry = this.findSupportedLacchainDidRegistry(did);
+    const identity = this.decodeDid(did).address;
+    return registry.lookupController(identity);
+  }
+
+  /**
+   * Verifies that the passed did is supported by checking the CHAIN_ID.
+   * Returns an instance of a supported verification otherwise throws an error.
+   * DID TYPE and DID Version
+   * @param {string} did
+   * @return {DidRegistryContractInterface}
+   */
+  findSupportedLacchainDidRegistry(did: string): DIDRegistryContractInterface {
+    const { chainId, didType, version, didRegistryAddress } =
+      this.decodeDid(did);
+    const foundDidRegistry = CHAIN_REGISTRY.get(chainId);
+    if (!foundDidRegistry || this.chainId !== chainId) {
+      // to improve chainId as an array
+      throw new BadRequestError(ErrorsMessages.UNSUPPORTED_CHAIN_ID_IN_DID);
+    }
+    const typeDetails = SUPPORTED_DID_TYPES.get(didType);
+    if (!typeDetails) {
+      throw new InternalServerError(ErrorsMessages.UNSUPPORTED_DID_TYPE);
+    }
+    const isVersion = typeDetails.get(version);
+    if (!isVersion) {
+      throw new BadRequestError(ErrorsMessages.UNSUPPORTED_DID_VERSION);
+    }
+    return new DIDRegistryContractInterface(
+      didRegistryAddress,
+      this.rpcUrl,
+      undefined,
+      this.nodeAddress
+    );
   }
 }

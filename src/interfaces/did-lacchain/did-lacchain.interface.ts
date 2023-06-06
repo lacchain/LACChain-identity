@@ -48,11 +48,27 @@ export interface IJwkAttribute {
   relation: string;
 }
 
+export interface IJwkRevokeAttribute {
+  did: string;
+  jwk: any;
+  backwardRevocationDays: number;
+  relation: string;
+  compromised: boolean;
+}
+
 export interface IJwkAttribute1 {
   did: string;
   jwk: any;
   exp: number;
   relation: string;
+}
+
+export interface IJwkRevokeAttribute1 {
+  did: string;
+  jwk: any;
+  relation: string;
+  compromised: boolean;
+  revokeDeltaTime: number;
 }
 export interface IJwkRsaAttribute {
   did: string;
@@ -86,4 +102,38 @@ export interface IX509Attribute {
   x509: X509Certificate;
   validDays: number;
   relation: string;
+}
+
+export interface IX509RevokeAttribute {
+  did: string;
+  x509: X509Certificate;
+  relation: string;
+  backwardRevocationDays: number;
+  compromised: boolean;
+}
+
+export interface IGenericRevokeAttributeFields {
+  did: string;
+  relation: string;
+  algorithm: string;
+  encodingMethod: string;
+  value: any;
+  revokeDeltaTime: number; // in seconds
+  compromised: boolean;
+}
+
+export interface CommonAttributeFields {
+  did: string;
+  relation: string;
+  algorithm: string;
+  encodingMethod: string;
+}
+
+export interface IRevokeAttribute {
+  identityAddress: string;
+  name: string;
+  value: string;
+  revokeDeltaTime: number;
+  compromised: boolean;
+  didRegistryAddress: string;
 }

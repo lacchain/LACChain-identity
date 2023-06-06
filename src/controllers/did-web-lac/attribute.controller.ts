@@ -10,7 +10,7 @@ import { ErrorsMessages } from '../../constants/errorMessages';
 import {
   EcJwkAttributeDTO,
   RsaJwkAttributeDTO
-} from '../../dto/did-lac/addAttributeDTO';
+} from '../../dto/did-lac/attributeDTO';
 
 @JsonController('/did-web-lac/attribute')
 @Service()
