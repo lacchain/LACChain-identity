@@ -102,7 +102,7 @@ export abstract class DidService implements DidLacService {
     const { did, validDays, type } = newOnchainDelegate;
     const delegateDid = (await this.createDid()).did;
     const delegateAddress = this.decodeDid(delegateDid).address;
-    const exp = Math.floor(Date.now() / 1000) + 86400 * validDays;
+    const exp = 86400 * validDays;
     const onchainDelegate: IOnchainDelegate = {
       did,
       exp,
@@ -228,7 +228,7 @@ export abstract class DidService implements DidLacService {
     const jwkAttr: IJwkAttribute1 = {
       did,
       jwk: extendedJwk,
-      exp: futureTime,
+      exp: delta,
       relation
     };
     return this._addJwkAttribute(jwkAttr);
@@ -294,7 +294,7 @@ export abstract class DidService implements DidLacService {
     jwkAttribute: IJwkAttribute
   ): Promise<any> {
     const validDays = jwkAttribute.validDays;
-    const validity = Math.floor(Date.now() / 1000) + 86400 * validDays;
+    const validity = 86400 * validDays;
     const { did, jwk, relation } = jwkAttribute;
     const mappedJwkAttribute: IJwkAttribute1 = {
       did,
@@ -357,7 +357,7 @@ export abstract class DidService implements DidLacService {
     const { did, validDays, relation } = newAccountIdAttribute;
     const delegateDid = (await this.createDid()).did;
     const delegateAddress = this.decodeDid(delegateDid).address;
-    const exp = Math.floor(Date.now() / 1000) + 86400 * validDays;
+    const exp = 86400 * validDays;
     const accountIdAttribute: IAccountIdAttribute = {
       did,
       exp,
@@ -377,8 +377,7 @@ export abstract class DidService implements DidLacService {
   async addEthereumAccountIdAttribute(
     accountIdAttribute: IAddAccountIdAttribute
   ): Promise<any> {
-    const exp =
-      Math.floor(Date.now() / 1000) + 86400 * accountIdAttribute.validDays;
+    const exp = 86400 * accountIdAttribute.validDays;
     const args: IAccountIdAttribute = {
       did: accountIdAttribute.did,
       exp,
