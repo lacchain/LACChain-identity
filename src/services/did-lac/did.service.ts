@@ -40,7 +40,6 @@ import {
 } from 'src/interfaces/ethereum/transaction';
 import { ethers } from 'ethers';
 import { LacchainLib } from './lacchain/lacchain-ethers';
-import { encode } from 'cbor';
 import {
   ATTRIBUTE_ENCODING_METHODS,
   DELEGATE_TYPES,
@@ -56,6 +55,7 @@ import {
   SUPPORTED_DID_TYPES
 } from '../../constants/did-web/lac/didRegistryAddresses';
 import { DidRegistryParams } from 'src/interfaces/did/did.generics';
+import { canonicalize } from 'json-canonicalize';
 
 @Service()
 export abstract class DidService implements DidLacService {
@@ -330,8 +330,8 @@ export abstract class DidService implements DidLacService {
       exp: jwkAttribute.exp,
       relation: jwkAttribute.relation,
       algorithm: 'jwk',
-      encodingMethod: 'cbor',
-      value: encode(jwkAttribute.jwk)
+      encodingMethod: 'hex',
+      value: toUtf8Bytes(canonicalize(jwkAttribute.jwk))
     };
     return this._addAttribute(attribute);
   }
@@ -343,8 +343,8 @@ export abstract class DidService implements DidLacService {
       did: jwkAttribute.did,
       relation: jwkAttribute.relation,
       algorithm: 'jwk',
-      encodingMethod: 'cbor',
-      value: encode(jwkAttribute.jwk),
+      encodingMethod: 'hex',
+      value: toUtf8Bytes(canonicalize(jwkAttribute.jwk)),
       revokeDeltaTime: jwkAttribute.revokeDeltaTime,
       compromised: jwkAttribute.compromised
     };
