@@ -23,7 +23,7 @@ const openProtestnetSupportedRegistries: didRegistryType = new Map<
   didType
 >();
 openProtestnetSupportedRegistries.set(
-  '0x54358D929CCf45C7cCEE8Ca60FCD0C0402489F54',
+  '0x43dE0954a2c83A415d82b9F31705B969b5856003',
   new Map([['0001', new Map([['0001', true]])]])
 );
 CHAIN_REGISTRY.set(
@@ -40,7 +40,7 @@ export const DEFAULT_DID_REGISTRY: Map<string, DidSpec> = new Map<
     {
       didType: '0001',
       didVersion: '0001',
-      didRegistryAddress: '0x54358D929CCf45C7cCEE8Ca60FCD0C0402489F54',
+      didRegistryAddress: '0x43dE0954a2c83A415d82b9F31705B969b5856003',
       didMethod: 'lac1'
     }
   ]

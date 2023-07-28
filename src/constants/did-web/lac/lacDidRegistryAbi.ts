@@ -531,6 +531,19 @@ export const LAC_DIDREGISTRY_RECOVERABLE_ABI = [
     type: 'function'
   },
   {
+    inputs: [],
+    name: 'minKeyRotationTime',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
     inputs: [
       {
         internalType: 'address',
@@ -881,6 +894,19 @@ export const LAC_DIDREGISTRY_RECOVERABLE_ABI = [
         internalType: 'bool',
         name: '',
         type: 'bool'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'version',
+    outputs: [
+      {
+        internalType: 'uint16',
+        name: '',
+        type: 'uint16'
       }
     ],
     stateMutability: 'view',
