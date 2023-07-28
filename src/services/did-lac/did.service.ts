@@ -330,7 +330,7 @@ export abstract class DidService implements DidLacService {
       exp: jwkAttribute.exp,
       relation: jwkAttribute.relation,
       algorithm: 'jwk',
-      encodingMethod: 'hex',
+      encodingMethod: 'json',
       value: toUtf8Bytes(canonicalize(jwkAttribute.jwk))
     };
     return this._addAttribute(attribute);
@@ -400,7 +400,7 @@ export abstract class DidService implements DidLacService {
       exp: accountIdAttribute.exp,
       relation: accountIdAttribute.relation,
       algorithm: 'esecp256k1rm',
-      encodingMethod: 'hex',
+      encodingMethod: 'blockchain',
       value: accountIdAttribute.blockchainAccountId
     };
     return this._addAttribute(attribute);

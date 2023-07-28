@@ -11,7 +11,8 @@ ATTRIBUTE_ENCODING_METHODS.set('hex', true);
 ATTRIBUTE_ENCODING_METHODS.set('base64', true);
 ATTRIBUTE_ENCODING_METHODS.set('base58', true);
 ATTRIBUTE_ENCODING_METHODS.set('pem', true);
-ATTRIBUTE_ENCODING_METHODS.set('cbor', true);
+ATTRIBUTE_ENCODING_METHODS.set('json', true);
+ATTRIBUTE_ENCODING_METHODS.set('blockchain', true);
 
 export const ATTRIBUTE_ALGORITHMS: Map<string, boolean> = new Map<
   string,
