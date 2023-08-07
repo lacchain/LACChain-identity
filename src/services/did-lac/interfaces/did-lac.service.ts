@@ -6,7 +6,10 @@ import {
 } from 'src/interfaces/did-lacchain/did-lacchain.interface';
 import { DidService } from '../../interfaces/did.service';
 // eslint-disable-next-line max-len
-import { INewDelegateResponse } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
+import {
+  INewDelegateResponse,
+  INewSecp256k1AttributeResponse
+} from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
 import { IEthereumTransactionResponse } from 'src/interfaces/ethereum/transaction';
 
 export type didLacAttributes = {
@@ -29,6 +32,9 @@ export interface DidLacService extends DidService {
   addNewEthereumAccountIdAttribute(
     newAccountIdAttribute: INewAttribute
   ): Promise<INewDelegateResponse>;
+  addNewSecp256k1Attribute(
+    newAttribute: INewAttribute
+  ): Promise<INewSecp256k1AttributeResponse>;
   rawAddAttributeFromX509Certificate(
     formData: any,
     x509Cert: Express.Multer.File

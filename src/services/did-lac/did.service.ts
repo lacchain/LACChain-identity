@@ -378,7 +378,9 @@ export abstract class DidService implements DidLacService {
     } as INewDelegateResponse;
   }
 
-  async addNewSecp256k1Attribute(newAttribute: INewAttribute): Promise<any> {
+  async addNewSecp256k1Attribute(
+    newAttribute: INewAttribute
+  ): Promise<INewSecp256k1AttributeResponse> {
     const { did, validDays, relation } = newAttribute;
     const key = await this.keyManagerService.createSecp256k1Key();
     const exp = 86400 * validDays;
