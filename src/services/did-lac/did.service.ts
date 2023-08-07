@@ -27,10 +27,11 @@ import {
   IJwkRevokeAttribute,
   IJwkRevokeAttribute1,
   IJwkRsaAttribute,
-  INewAccountIdAttribute,
+  INewAttribute,
   INewOnchainDelegate,
   IOnchainDelegate,
   IRevokeAttribute,
+  ISecp256k1Attribute,
   IX509Attribute,
   IX509RevokeAttribute
 } from 'src/interfaces/did-lacchain/did-lacchain.interface';
@@ -47,7 +48,10 @@ import {
 } from '../../constants/did-web/lac/didVerificationMethodParams';
 import { X509Certificate } from 'crypto';
 // eslint-disable-next-line max-len
-import { INewDelegateResponse } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
+import {
+  INewDelegateResponse,
+  INewSecp256k1AttributeResponse
+} from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
 import { RevokeAttributeDTO } from '../../dto/did-lac/attributeDTO';
 import { validateOrReject } from 'class-validator';
 import {
@@ -352,7 +356,7 @@ export abstract class DidService implements DidLacService {
   }
 
   async addNewEthereumAccountIdAttribute(
-    newAccountIdAttribute: INewAccountIdAttribute
+    newAccountIdAttribute: INewAttribute
   ): Promise<INewDelegateResponse> {
     const { did, validDays, relation } = newAccountIdAttribute;
     const delegateDid = (await this.createDid()).did;
@@ -372,6 +376,23 @@ export abstract class DidService implements DidLacService {
       delegateDid,
       delegateAddress
     } as INewDelegateResponse;
+  }
+
+  async addNewSecp256k1Attribute(newAttribute: INewAttribute): Promise<any> {
+    const { did, validDays, relation } = newAttribute;
+    const key = await this.keyManagerService.createSecp256k1Key();
+    const exp = 86400 * validDays;
+    const secp256k1Attribute: ISecp256k1Attribute = {
+      did,
+      exp,
+      relation,
+      publicKey: key.publicKey
+    };
+    const txResponse = await this._addSecp256k1Attribute(secp256k1Attribute);
+    return {
+      ...txResponse,
+      publicKey: key.publicKey
+    } as INewSecp256k1AttributeResponse;
   }
 
   async addEthereumAccountIdAttribute(
@@ -402,6 +423,20 @@ export abstract class DidService implements DidLacService {
       algorithm: 'esecp256k1rm',
       encodingMethod: 'blockchain',
       value: accountIdAttribute.blockchainAccountId
+    };
+    return this._addAttribute(attribute);
+  }
+
+  private async _addSecp256k1Attribute(
+    secp256k1Attribute: ISecp256k1Attribute
+  ): Promise<any> {
+    const attribute: IGenericAttributeFields = {
+      did: secp256k1Attribute.did,
+      exp: secp256k1Attribute.exp,
+      relation: secp256k1Attribute.relation,
+      algorithm: 'esecp256k1rm',
+      encodingMethod: 'hex',
+      value: secp256k1Attribute.publicKey
     };
     return this._addAttribute(attribute);
   }
@@ -592,7 +627,7 @@ export abstract class DidService implements DidLacService {
     const chainId = '0x' + c;
     return {
       address,
-      didMethod: this.didMethod,
+      didMethod: this.didMethod.replace('did:', '').replace(':', ''),
       didRegistryAddress,
       chainId,
       version,

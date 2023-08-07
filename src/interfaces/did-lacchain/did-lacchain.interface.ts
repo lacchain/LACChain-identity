@@ -12,7 +12,7 @@ export interface INewOnchainDelegate {
   type: string;
 }
 
-export interface INewAccountIdAttribute {
+export interface INewAttribute {
   did: string;
   validDays: number;
   relation: string;
@@ -23,6 +23,13 @@ export interface IAccountIdAttribute {
   exp: number;
   relation: string;
   blockchainAccountId: string;
+}
+
+export interface ISecp256k1Attribute {
+  did: string;
+  exp: number;
+  relation: string;
+  publicKey: string;
 }
 
 export interface IGenericAttributeFields {

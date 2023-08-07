@@ -67,7 +67,7 @@ export class AccountIdAttributeDTO {
   // -> thus algorithm is esecp256k1rm -> EcdsaSecp256k1RecoveryMethod2020
 }
 
-export class NewAccountIdAttributeDTO {
+export class NewAttributeDTO {
   @IsString()
   did!: string;
   @IsNumber()
@@ -87,17 +87,3 @@ export class RevokeAttributeDTO {
   @IsBoolean()
   compromised!: boolean;
 }
-
-// export class RevokeAttributeValidator {
-//   @IsString()
-//   did!: string;
-//   @IsDefined()
-//   @Type(() => X509Certificate)
-//   x509!: X509Certificate;
-//   @IsString()
-//   relation!: string;
-//   @IsNumber()
-//   backwardRevocationDays!: number;
-//   @IsBoolean()
-//   compromised!: boolean;
-// }

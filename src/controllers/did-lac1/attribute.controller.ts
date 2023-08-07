@@ -10,7 +10,7 @@ import { Service } from 'typedi';
 import { ErrorsMessages } from '../../constants/errorMessages';
 import {
   AccountIdAttributeDTO,
-  NewAccountIdAttributeDTO
+  NewAttributeDTO
 } from '../../dto/did-lac/attributeDTO';
 import { DidLac1Service } from '@services/did-lac/didLac1.service';
 
@@ -68,10 +68,23 @@ export class DidLac1AttributeController {
 
   @Post('/add/delegate/address/new')
   async addNewEthereumAccountAttribute(
-    @Body({ validate: true }) attribute: NewAccountIdAttributeDTO
+    @Body({ validate: true }) attribute: NewAttributeDTO
   ): Promise<any> {
     try {
       return this.didService.addNewEthereumAccountIdAttribute(attribute);
+    } catch (error: any) {
+      throw new BadRequestError(
+        error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  @Post('/add/secp256k1/new')
+  async addNewSecp256k1Attribute(
+    @Body({ validate: true }) attribute: NewAttributeDTO
+  ): Promise<any> {
+    try {
+      return this.didService.addNewSecp256k1Attribute(attribute);
     } catch (error: any) {
       throw new BadRequestError(
         error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR

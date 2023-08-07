@@ -1,6 +1,6 @@
 {
   "name": "lacpass-identity",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "description": "Rest api for lacpass identity manager",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -85,7 +85,7 @@
     "helmet": "^5.0.2",
     "json-canonicalize": "^1.0.6",
     "jsonwebtoken": "^9.0.0",
-    "lacpass-key-manager": "^0.0.17",
+    "lacpass-key-manager": "^0.0.18",
     "morgan": "^1.10.0",
     "multer": "^1.4.4",
     "nodemailer": "^6.7.3",

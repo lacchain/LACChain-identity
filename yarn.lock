@@ -5215,10 +5215,10 @@ koa@^2.8.2:
     type-is "^1.6.16"
     vary "^1.1.2"
 
-lacpass-key-manager@^0.0.17:
-  version "0.0.17"
-  resolved "https://registry.yarnpkg.com/lacpass-key-manager/-/lacpass-key-manager-0.0.17.tgz#3e8ddc87e4a2766467c53f6f22d06975c1723030"
-  integrity sha512-D36Lau2UKK0LwDQSrE6xQM4JMiI5/tS+Z6fmFBFUiYg4/hrtPWL6ii50S6IM/lVcm5UcEhwzMxwoI/QHHUs2Pw==
+lacpass-key-manager@^0.0.18:
+  version "0.0.18"
+  resolved "https://registry.yarnpkg.com/lacpass-key-manager/-/lacpass-key-manager-0.0.18.tgz#99fb3bec03e3c6d0de1066f227c38e93778eb0cc"
+  integrity sha512-hsvGm79XmYK05Nmh15qzRjpSGfQknlqDF8wUSGGjbm1D1MI3c/aGNOFOhJaFE/u1Wrqu1JBlKcQFYq1GnpXHTw==
   dependencies:
     "@lacchain/gas-model-provider" "^1.0.1"
     aws-sdk "^2.1116.0"

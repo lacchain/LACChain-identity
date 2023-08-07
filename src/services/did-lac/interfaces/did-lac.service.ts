@@ -1,7 +1,7 @@
 import {
   IJwkEcAttribute,
   IJwkRsaAttribute,
-  INewAccountIdAttribute,
+  INewAttribute,
   INewOnchainDelegate
 } from 'src/interfaces/did-lacchain/did-lacchain.interface';
 import { DidService } from '../../interfaces/did.service';
@@ -27,7 +27,7 @@ export interface DidLacService extends DidService {
     newOnchainDelegate: INewOnchainDelegate
   ): Promise<INewDelegateResponse>;
   addNewEthereumAccountIdAttribute(
-    newAccountIdAttribute: INewAccountIdAttribute
+    newAccountIdAttribute: INewAttribute
   ): Promise<INewDelegateResponse>;
   rawAddAttributeFromX509Certificate(
     formData: any,
