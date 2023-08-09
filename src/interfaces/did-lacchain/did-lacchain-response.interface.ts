@@ -4,7 +4,7 @@ export interface INewDelegateResponse {
   txHash: string;
 }
 
-export interface INewSecp256k1AttributeResponse {
+export interface INewECAttributeCreationResponse {
   publicKey: string;
   txHash: string;
 }

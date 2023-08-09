@@ -1,6 +1,7 @@
-export interface ISecp256k1 {
+export interface IECKey {
   id: string;
   keyId: string;
   address: string;
   publicKey: string;
+  type: string;
 }

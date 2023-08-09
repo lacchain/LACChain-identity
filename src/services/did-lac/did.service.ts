@@ -31,7 +31,7 @@ import {
   INewOnchainDelegate,
   IOnchainDelegate,
   IRevokeAttribute,
-  ISecp256k1Attribute,
+  IECAttribute,
   IX509Attribute,
   IX509RevokeAttribute
 } from 'src/interfaces/did-lacchain/did-lacchain.interface';
@@ -50,7 +50,7 @@ import { X509Certificate } from 'crypto';
 // eslint-disable-next-line max-len
 import {
   INewDelegateResponse,
-  INewSecp256k1AttributeResponse
+  INewECAttributeCreationResponse
 } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
 import { RevokeAttributeDTO } from '../../dto/did-lac/attributeDTO';
 import { validateOrReject } from 'class-validator';
@@ -380,21 +380,42 @@ export abstract class DidService implements DidLacService {
 
   async addNewSecp256k1Attribute(
     newAttribute: INewAttribute
-  ): Promise<INewSecp256k1AttributeResponse> {
+  ): Promise<INewECAttributeCreationResponse> {
     const { did, validDays, relation } = newAttribute;
     const key = await this.keyManagerService.createSecp256k1Key();
     const exp = 86400 * validDays;
-    const secp256k1Attribute: ISecp256k1Attribute = {
+    const ecAttribute: IECAttribute = {
       did,
       exp,
       relation,
-      publicKey: key.publicKey
+      publicKey: key.publicKey,
+      algorithm: 'esecp256k1rm'
     };
-    const txResponse = await this._addSecp256k1Attribute(secp256k1Attribute);
+    const txResponse = await this._addECAttribute(ecAttribute);
     return {
       ...txResponse,
       publicKey: key.publicKey
-    } as INewSecp256k1AttributeResponse;
+    } as INewECAttributeCreationResponse;
+  }
+
+  async addNewEd25519Attribute(
+    newAttribute: INewAttribute
+  ): Promise<INewECAttributeCreationResponse> {
+    const { did, validDays, relation } = newAttribute;
+    const key = await this.keyManagerService.createEd25519Key();
+    const exp = 86400 * validDays;
+    const ecAttribute: IECAttribute = {
+      did,
+      exp,
+      relation,
+      publicKey: key.publicKey,
+      algorithm: 'x25519ka' // TODO: improve
+    };
+    const txResponse = await this._addECAttribute(ecAttribute);
+    return {
+      ...txResponse,
+      publicKey: key.publicKey
+    } as INewECAttributeCreationResponse;
   }
 
   async addEthereumAccountIdAttribute(
@@ -429,14 +450,14 @@ export abstract class DidService implements DidLacService {
     return this._addAttribute(attribute);
   }
 
-  private async _addSecp256k1Attribute(
-    secp256k1Attribute: ISecp256k1Attribute
+  private async _addECAttribute(
+    secp256k1Attribute: IECAttribute
   ): Promise<any> {
     const attribute: IGenericAttributeFields = {
       did: secp256k1Attribute.did,
       exp: secp256k1Attribute.exp,
       relation: secp256k1Attribute.relation,
-      algorithm: 'esecp256k1rm',
+      algorithm: secp256k1Attribute.algorithm,
       encodingMethod: 'hex',
       value: secp256k1Attribute.publicKey
     };
