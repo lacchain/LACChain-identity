@@ -25,11 +25,12 @@ export interface IAccountIdAttribute {
   blockchainAccountId: string;
 }
 
-export interface ISecp256k1Attribute {
+export interface IECAttribute {
   did: string;
   exp: number;
   relation: string;
   publicKey: string;
+  algorithm: string;
 }
 
 export interface IGenericAttributeFields {

@@ -91,4 +91,17 @@ export class DidLac1AttributeController {
       );
     }
   }
+
+  @Post('/add/ed25519/new')
+  async addNewEd25519Attribute(
+    @Body({ validate: true }) attribute: NewAttributeDTO
+  ): Promise<any> {
+    try {
+      return this.didService.addNewEd25519Attribute(attribute);
+    } catch (error: any) {
+      throw new BadRequestError(
+        error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }

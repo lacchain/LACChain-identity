@@ -14,7 +14,7 @@ import {
   log4TSProvider
 } from '@config';
 
-import { Secp256k1, Secp256k1DbService } from 'lacpass-key-manager';
+import { EC, Secp256k1DbService } from 'lacpass-key-manager';
 
 const log = log4TSProvider.getLogger('ormConfig');
 
@@ -46,7 +46,7 @@ const config: ConnectionOptions = {
 
 if (LACPASS_IDENTITY_IS_DEPENDENT_SERVICE !== 'true') {
   log.info('Importing entities from external components');
-  config.entities?.push(Secp256k1);
+  config.entities?.push(EC);
   // eslint-disable-next-line max-len
   typeof Secp256k1DbService; // validates this service exist as of the key-manager version being installed
 } else {
