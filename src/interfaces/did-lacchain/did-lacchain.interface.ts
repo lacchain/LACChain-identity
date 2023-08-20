@@ -18,6 +18,10 @@ export interface INewAttribute {
   relation: string;
 }
 
+export interface INewJwkAttribute extends INewAttribute {
+  jwkType: 'secp256k1';
+}
+
 export interface IAccountIdAttribute {
   did: string;
   exp: number;
@@ -95,7 +99,7 @@ export interface RsaJwk {
 export interface EcJwk {
   kty: string;
   x: string;
-  y: string;
+  y?: string;
   crv: string;
 }
 export interface IJwkEcAttribute {

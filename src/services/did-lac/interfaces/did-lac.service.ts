@@ -2,13 +2,15 @@ import {
   IJwkEcAttribute,
   IJwkRsaAttribute,
   INewAttribute,
+  INewJwkAttribute,
   INewOnchainDelegate
 } from 'src/interfaces/did-lacchain/did-lacchain.interface';
 import { DidService } from '../../interfaces/did.service';
 // eslint-disable-next-line max-len
 import {
   INewDelegateResponse,
-  INewECAttributeCreationResponse
+  INewECAttributeCreationResponse,
+  INewECJwkAttributeCreationResponse
 } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
 import { IEthereumTransactionResponse } from 'src/interfaces/ethereum/transaction';
 
@@ -46,4 +48,7 @@ export interface DidLacService extends DidService {
     formData: any,
     x509Cert: Express.Multer.File
   ): Promise<IEthereumTransactionResponse>;
+  addNewJwkAttribute(
+    attribute: INewJwkAttribute
+  ): Promise<INewECJwkAttributeCreationResponse>;
 }

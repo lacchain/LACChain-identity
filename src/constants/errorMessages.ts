@@ -25,6 +25,8 @@ export enum ErrorsMessages {
   UNSUPPORTED_CHAIN_ID = 'Unsupported chain Id',
   INVALID_EXPIRATION_DAYS = 'Valid days must be greater than zero',
   INVALID_JWK_TYPE = 'Invalid Jwk type',
+  // eslint-disable-next-line max-len
+  UNSUPPORTED_JWK_CREATION_FOR_TYPE = 'The type of jwk for creation is not supported yet, valid type: "secp256k1"',
   INVALID_VM_RELATION_TYPE = 'Invalid verification method relation type',
   UNSUPPORTED_ATTRIBUTE_ENCODING_METHOD = 'Unsupported attribute encoding',
   INVALID_DELEGATE_TYPE = 'Invalid delegate type',

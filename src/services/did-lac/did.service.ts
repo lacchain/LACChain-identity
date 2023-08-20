@@ -33,7 +33,9 @@ import {
   IRevokeAttribute,
   IECAttribute,
   IX509Attribute,
-  IX509RevokeAttribute
+  IX509RevokeAttribute,
+  EcJwk,
+  INewJwkAttribute
 } from 'src/interfaces/did-lacchain/did-lacchain.interface';
 import {
   IEthereumTransactionResponse,
@@ -50,7 +52,8 @@ import { X509Certificate } from 'crypto';
 // eslint-disable-next-line max-len
 import {
   INewDelegateResponse,
-  INewECAttributeCreationResponse
+  INewECAttributeCreationResponse,
+  INewECJwkAttributeCreationResponse
 } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
 import { RevokeAttributeDTO } from '../../dto/did-lac/attributeDTO';
 import { validateOrReject } from 'class-validator';
@@ -153,6 +156,33 @@ export abstract class DidService implements DidLacService {
       data: encodedData
     };
     return this.lacchainLib.signAndSend(tx);
+  }
+  async addNewJwkAttribute(attribute: INewJwkAttribute): Promise<any> {
+    if (attribute.jwkType == 'secp256k1') {
+      const key = await this.keyManagerService.createSecp256k1Key();
+      const x = Buffer.from(key.publicKey.replace('0x', ''), 'hex').toString(
+        'base64url'
+      );
+      const ecJwk: EcJwk = {
+        kty: 'EC',
+        x,
+        crv: 'secp256k1'
+      };
+      const ecJwkAttribute: IJwkEcAttribute = {
+        did: attribute.did,
+        ecJwk,
+        validDays: attribute.validDays,
+        relation: attribute.relation
+      };
+      const r: INewECJwkAttributeCreationResponse = {
+        ...(await this.addEcJwkAttribute(ecJwkAttribute)),
+        ecJwk
+      };
+      return r;
+    }
+    const message = ErrorsMessages.UNSUPPORTED_JWK_CREATION_FOR_TYPE;
+    this.log.info(message);
+    throw new BadRequestError(message);
   }
   async addRsaJwkAttribute(jwkRsaAttribute: IJwkRsaAttribute): Promise<any> {
     // TODO: validate RSA params

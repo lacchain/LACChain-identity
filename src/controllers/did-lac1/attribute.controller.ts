@@ -10,7 +10,8 @@ import { Service } from 'typedi';
 import { ErrorsMessages } from '../../constants/errorMessages';
 import {
   AccountIdAttributeDTO,
-  NewAttributeDTO
+  NewAttributeDTO,
+  NewJwkAttributeDTO
 } from '../../dto/did-lac/attributeDTO';
 import { DidLac1Service } from '@services/did-lac/didLac1.service';
 
@@ -46,6 +47,24 @@ export class DidLac1AttributeController {
         formData,
         x509Cert
       );
+    } catch (error: any) {
+      throw new BadRequestError(
+        error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+   * Adds a new jwk attribute accoding to the passed algorithm: rsa, p256, secp256k1
+   * @param {NewJwkAttributeDTO} attribute - Details, validDays and relationships
+   * @return {any}
+   */
+  @Post('/add/jwk/new')
+  async addJwkAttribute(
+    @Body({ validate: true }) attribute: NewJwkAttributeDTO
+  ): Promise<any> {
+    try {
+      return this.didService.addNewJwkAttribute(attribute);
     } catch (error: any) {
       throw new BadRequestError(
         error.detail ?? error.message ?? ErrorsMessages.INTERNAL_SERVER_ERROR

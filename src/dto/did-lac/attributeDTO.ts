@@ -76,6 +76,11 @@ export class NewAttributeDTO {
   relation!: string;
 }
 
+export class NewJwkAttributeDTO extends NewAttributeDTO {
+  @IsString()
+  jwkType!: 'secp256k1';
+}
+
 export class RevokeAttributeDTO {
   @IsString()
   did!: string;
