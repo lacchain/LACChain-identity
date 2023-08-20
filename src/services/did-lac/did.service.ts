@@ -176,7 +176,7 @@ export abstract class DidService implements DidLacService {
       };
       const r: INewJwkAttributeCreationResponse = {
         ...(await this.addEcJwkAttribute(ecJwkAttribute)),
-        ecJwk
+        jwk: ecJwk
       };
       return r;
     }
