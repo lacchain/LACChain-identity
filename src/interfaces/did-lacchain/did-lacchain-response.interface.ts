@@ -11,7 +11,7 @@ export interface INewECAttributeCreationResponse {
   txHash: string;
 }
 
-export interface INewECJwkAttributeCreationResponse {
+export interface INewJwkAttributeCreationResponse {
   txHash: string;
   jwk: EcJwk | RsaJwk;
 }

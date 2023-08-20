@@ -53,7 +53,7 @@ import { X509Certificate } from 'crypto';
 import {
   INewDelegateResponse,
   INewECAttributeCreationResponse,
-  INewECJwkAttributeCreationResponse
+  INewJwkAttributeCreationResponse
 } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
 import { RevokeAttributeDTO } from '../../dto/did-lac/attributeDTO';
 import { validateOrReject } from 'class-validator';
@@ -174,7 +174,7 @@ export abstract class DidService implements DidLacService {
         validDays: attribute.validDays,
         relation: attribute.relation
       };
-      const r: INewECJwkAttributeCreationResponse = {
+      const r: INewJwkAttributeCreationResponse = {
         ...(await this.addEcJwkAttribute(ecJwkAttribute)),
         ecJwk
       };

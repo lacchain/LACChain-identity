@@ -10,7 +10,7 @@ import { DidService } from '../../interfaces/did.service';
 import {
   INewDelegateResponse,
   INewECAttributeCreationResponse,
-  INewECJwkAttributeCreationResponse
+  INewJwkAttributeCreationResponse
 } from 'src/interfaces/did-lacchain/did-lacchain-response.interface';
 import { IEthereumTransactionResponse } from 'src/interfaces/ethereum/transaction';
 
@@ -50,5 +50,5 @@ export interface DidLacService extends DidService {
   ): Promise<IEthereumTransactionResponse>;
   addNewJwkAttribute(
     attribute: INewJwkAttribute
-  ): Promise<INewECJwkAttributeCreationResponse>;
+  ): Promise<INewJwkAttributeCreationResponse>;
 }
