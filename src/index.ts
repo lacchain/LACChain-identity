@@ -6,7 +6,7 @@ export {
 } from './services/did-lac/interfaces/did-lac.service';
 export { DidService, did as DidType } from './services/interfaces/did.service';
 export { Did as DidEntity } from './entities/did.entity';
-export { EC as ECEntity } from 'lacpass-key-manager';
+export { EC as ECEntity } from 'lacchain-key-manager';
 export * from './dto/did-lac/attributeDTO';
 export * from './dto/did-lac/delegateDTO';
 export * from './interfaces/did-lacchain/did-lacchain.interface';

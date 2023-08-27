@@ -1,7 +1,7 @@
-# Identity API - Steps for LACPass
+# Identity API - Steps for LACChain
 
 ## Requisites before continuing
-* You should have configured/access to the LACPass API
+* You should have configured/access to the LACChain API
 * You should have the public x509 certificate whose purpose is to sign health data.
     * For demo purposes you can set these certificates from [certificate generation example](./cert.generation.examples.md). After following those steps you will have the certificate in the path: certs/DSC/DSC.crt
 * You should have a terminal to execute the commands listed below.
@@ -13,7 +13,7 @@ In this section you will have a did (Decentralized Indetifier) and you will have
 1. Set API url to interact with
 
 ```sh
-api_url=http://localhost:3001 # Set LACPass API url
+api_url=http://localhost:3001 # Set LACChain Identity API url
 ```
 
 2. Create a did

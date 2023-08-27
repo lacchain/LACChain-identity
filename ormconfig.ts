@@ -10,11 +10,11 @@ import {
   TYPEORM_MIGRATIONS_RUN,
   PRODUCTION_ENV,
   TYPEORM_TYPE,
-  LACPASS_IDENTITY_IS_DEPENDENT_SERVICE,
+  LACCHAIN_IDENTITY_IS_DEPENDENT_SERVICE,
   log4TSProvider
 } from '@config';
 
-import { EC, Secp256k1DbService } from 'lacpass-key-manager';
+import { EC, Secp256k1DbService } from 'lacchain-key-manager';
 
 const log = log4TSProvider.getLogger('ormConfig');
 
@@ -44,7 +44,7 @@ const config: ConnectionOptions = {
   }
 };
 
-if (LACPASS_IDENTITY_IS_DEPENDENT_SERVICE !== 'true') {
+if (LACCHAIN_IDENTITY_IS_DEPENDENT_SERVICE !== 'true') {
   log.info('Importing entities from external components');
   config.entities?.push(EC);
   // eslint-disable-next-line max-len

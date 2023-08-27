@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import fetch from 'node-fetch';
 import {
-  LACPASS_IDENTITY_IS_DEPENDENT_SERVICE,
+  LACCHAIN_IDENTITY_IS_DEPENDENT_SERVICE,
   KEY_MANAGER_BASE_URL,
   SECP256K1_KEY,
   SECP256K1_SIGN_ETHEREUM_TRANSACTION,
@@ -16,7 +16,7 @@ import {
   Secp256k1SignLacchainTransactionService,
   ISignedTransaction,
   ILacchainTransaction
-} from 'lacpass-key-manager';
+} from 'lacchain-key-manager';
 import { InternalServerError } from 'routing-controllers';
 import { ErrorsMessages } from '@constants/errorMessages';
 import { IECKey } from 'src/interfaces/key/key.interface';
@@ -37,24 +37,24 @@ export class KeyManagerService {
   private generic25519Service: ECService | null;
   log = log4TSProvider.getLogger('KeyManagerService');
   constructor() {
-    if (LACPASS_IDENTITY_IS_DEPENDENT_SERVICE !== 'true') {
+    if (LACCHAIN_IDENTITY_IS_DEPENDENT_SERVICE !== 'true') {
       this.log.info('Configuring key-manager library usage');
       this.createSecp256k1Key = this.createSecp256k1KeyByLib;
-      const S = require('lacpass-key-manager').Secp256k1DbService;
+      const S = require('lacchain-key-manager').Secp256k1DbService;
       this.secp256k1Service = new S();
 
       this.signEthereumTransaction = this.signEthereumTransactionByLib;
       const T =
-        require('lacpass-key-manager').Secp256k1SignTransactionServiceDb;
+        require('lacchain-key-manager').Secp256k1SignTransactionServiceDb;
       this.secp256k1SignTransactionService = new T();
 
       this.signLacchainTransaction = this.signLacchainTransactionByLib;
       const R =
-        require('lacpass-key-manager').Secp256k1SignLacchainTransactionServiceDb;
+        require('lacchain-key-manager').Secp256k1SignLacchainTransactionServiceDb;
       this.secp256k1SignLacchainTransactionService = new R();
 
       this.createEd25519Key = this.createEd25519KeyByLib;
-      const SS = require('lacpass-key-manager').Generic25519DbService;
+      const SS = require('lacchain-key-manager').Generic25519DbService;
       this.generic25519Service = new SS('ed25519');
     } else {
       this.log.info('Configuring key-manager external service connection');

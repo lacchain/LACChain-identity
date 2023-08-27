@@ -44,7 +44,7 @@ services:
     ports:
       - '${EXPOSED_CONTAINER_SERVER_PORT}:${PORT}'
     restart: on-failure
-    container_name: lacpass-identity-manager
+    container_name: lacchain-identity-manager
     depends_on:
       - postgres
       - redis
