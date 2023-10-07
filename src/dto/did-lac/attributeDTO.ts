@@ -78,7 +78,7 @@ export class NewAttributeDTO {
 
 export class NewJwkAttributeDTO extends NewAttributeDTO {
   @IsString()
-  jwkType!: 'secp256k1';
+  jwkType!: 'secp256k1' | 'secp256r1';
 }
 
 export class RevokeAttributeDTO {

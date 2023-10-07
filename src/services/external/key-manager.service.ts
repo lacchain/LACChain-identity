@@ -7,7 +7,8 @@ import {
   SECP256K1_SIGN_ETHEREUM_TRANSACTION,
   SECP256K1_SIGN_LACCHAIN_TRANSACTION,
   log4TSProvider,
-  ED25519_CREATE_KEY
+  ED25519_CREATE_KEY,
+  P256_CREATE_KEY
 } from '../../config';
 import {
   IEthereumTransaction,
@@ -24,6 +25,7 @@ import { IECKey } from 'src/interfaces/key/key.interface';
 export class KeyManagerService {
   public createSecp256k1Key: () => Promise<IECKey>;
   public createEd25519Key: () => Promise<IECKey>;
+  public createP256Key: () => Promise<IECKey>;
   public signEthereumTransaction: (
     ethereumTransaction: IEthereumTransaction
   ) => Promise<ISignedTransaction>;
@@ -35,6 +37,7 @@ export class KeyManagerService {
   // eslint-disable-next-line max-len
   private secp256k1SignLacchainTransactionService: Secp256k1SignLacchainTransactionService | null;
   private generic25519Service: ECService | null;
+  private p256KeyService: ECService | null;
   log = log4TSProvider.getLogger('KeyManagerService');
   constructor() {
     if (LACCHAIN_IDENTITY_IS_DEPENDENT_SERVICE !== 'true') {
@@ -56,6 +59,10 @@ export class KeyManagerService {
       this.createEd25519Key = this.createEd25519KeyByLib;
       const SS = require('lacchain-key-manager').Generic25519DbService;
       this.generic25519Service = new SS('ed25519');
+
+      this.createP256Key = this.createP256KeyByLib;
+      const TT = require('lacchain-key-manager').P256DbService;
+      this.p256KeyService = new TT();
     } else {
       this.log.info('Configuring key-manager external service connection');
       this.secp256k1Service = null;
@@ -71,6 +78,9 @@ export class KeyManagerService {
 
       this.generic25519Service = null;
       this.createEd25519Key = this.createEd25519KeyByExternalService;
+
+      this.p256KeyService = null;
+      this.createP256Key = this.createP256KeyByExternalService;
     }
   }
   async createSecp256k1KeyByLib(): Promise<IECKey> {
@@ -97,6 +107,25 @@ export class KeyManagerService {
 
   async createEd25519KeyByExternalService(): Promise<IECKey> {
     const result = await fetch(`${KEY_MANAGER_BASE_URL}${ED25519_CREATE_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('status', result.status);
+    if (result.status !== 200) {
+      console.log(await result.text());
+      throw new InternalServerError(ErrorsMessages.CREATE_KEY_ERROR);
+    }
+    return (await result.json()) as IECKey;
+  }
+
+  async createP256KeyByLib(): Promise<IECKey> {
+    return (await this.p256KeyService?.createKey()) as IECKey;
+  }
+
+  async createP256KeyByExternalService(): Promise<IECKey> {
+    const result = await fetch(`${KEY_MANAGER_BASE_URL}${P256_CREATE_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

@@ -19,7 +19,7 @@ export interface INewAttribute {
 }
 
 export interface INewJwkAttribute extends INewAttribute {
-  jwkType: 'secp256k1';
+  jwkType: 'secp256k1' | 'secp256r1';
 }
 
 export interface IAccountIdAttribute {
