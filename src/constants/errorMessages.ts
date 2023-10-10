@@ -26,7 +26,7 @@ export enum ErrorsMessages {
   INVALID_EXPIRATION_DAYS = 'Valid days must be greater than zero',
   INVALID_JWK_TYPE = 'Invalid Jwk type',
   // eslint-disable-next-line max-len
-  UNSUPPORTED_JWK_CREATION_FOR_TYPE = 'The type of jwk for creation is not supported yet, valid type: "secp256k1"',
+  UNSUPPORTED_JWK_CREATION_FOR_TYPE = 'The type of jwk for creation is not supported yet, valid type: "secp256k1" or "secp256r1"',
   INVALID_VM_RELATION_TYPE = 'Invalid verification method relation type',
   UNSUPPORTED_ATTRIBUTE_ENCODING_METHOD = 'Unsupported attribute encoding',
   INVALID_DELEGATE_TYPE = 'Invalid delegate type',
@@ -46,7 +46,11 @@ export enum ErrorsMessages {
   UNEXPECTED_RESPONSE_IN_SUCCESSFUL_TRANSACTION_ERROR = 'Transaction was successfully completed but received an unexpected response',
   UNSUPPORTED_CHAIN_ID_IN_DID = 'Unsupported chainId was found in DID',
   UNSUPPORTED_DID_TYPE = 'Unsupported DID type',
-  UNSUPPORTED_DID_VERSION = 'Unsupported DID version'
+  UNSUPPORTED_DID_VERSION = 'Unsupported DID version',
+  // eslint-disable-next-line max-len
+  PUBLIC_KEY_COMPRESSED_FORMAT_ERROR = 'Unexpected public key format, expected compressed format',
+  // eslint-disable-next-line max-len
+  PUBLIC_KEY_UNCOMPRESSED_FORMAT_ERROR = 'Unexpected public key format, expected uncompressed format'
 }
 
 export const Errors = {

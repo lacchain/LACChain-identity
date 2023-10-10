@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.3
+
+* Add support to associate a P-256 JWK to a DID
 ## 0.0.1
 
 ### Additions and Improvements

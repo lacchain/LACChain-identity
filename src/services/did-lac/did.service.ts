@@ -159,31 +159,82 @@ export abstract class DidService implements DidLacService {
   }
   async addNewJwkAttribute(attribute: INewJwkAttribute): Promise<any> {
     if (attribute.jwkType == 'secp256k1') {
-      const key = await this.keyManagerService.createSecp256k1Key();
-      const x = Buffer.from(key.publicKey.replace('0x', ''), 'hex').toString(
-        'base64url'
-      );
-      const ecJwk: EcJwk = {
-        kty: 'EC',
-        x,
-        crv: 'secp256k1'
-      };
-      const ecJwkAttribute: IJwkEcAttribute = {
-        did: attribute.did,
-        ecJwk,
-        validDays: attribute.validDays,
-        relation: attribute.relation
-      };
-      const r: INewJwkAttributeCreationResponse = {
-        ...(await this.addEcJwkAttribute(ecJwkAttribute)),
-        jwk: ecJwk
-      };
-      return r;
+      return this.addNewSecp256k1JwkAttribute(attribute);
+    } else if (attribute.jwkType == 'secp256r1') {
+      return this.addNewSecp256r1JwkAttribute(attribute);
     }
     const message = ErrorsMessages.UNSUPPORTED_JWK_CREATION_FOR_TYPE;
     this.log.info(message);
     throw new BadRequestError(message);
   }
+
+  async addNewSecp256k1JwkAttribute(attribute: INewJwkAttribute): Promise<any> {
+    const key = await this.keyManagerService.createSecp256k1Key();
+    // invariant verification
+    const pubKey = key.publicKey.replace('0x', '');
+    if (pubKey.length !== 66 || !pubKey.startsWith('02')) {
+      throw new BadRequestError(
+        ErrorsMessages.PUBLIC_KEY_COMPRESSED_FORMAT_ERROR
+      );
+    }
+    const x = Buffer.from(key.publicKey.replace('0x02', ''), 'hex').toString(
+      'base64url'
+    );
+    const ecJwk: EcJwk = {
+      kty: 'EC',
+      x,
+      crv: 'secp256k1'
+    };
+    const ecJwkAttribute: IJwkEcAttribute = {
+      did: attribute.did,
+      ecJwk,
+      validDays: attribute.validDays,
+      relation: attribute.relation
+    };
+    const r: INewJwkAttributeCreationResponse = {
+      ...(await this.addEcJwkAttribute(ecJwkAttribute)),
+      jwk: ecJwk
+    };
+    return r;
+  }
+
+  async addNewSecp256r1JwkAttribute(attribute: INewJwkAttribute): Promise<any> {
+    const key = await this.keyManagerService.createP256Key();
+    // invariant verification
+    const pubKey = key.publicKey.replace('0x', '');
+    if (pubKey.length !== 130 || !pubKey.startsWith('04')) {
+      throw new BadRequestError(
+        ErrorsMessages.PUBLIC_KEY_UNCOMPRESSED_FORMAT_ERROR
+      );
+    }
+    const pubKeyNoPrefix = key.publicKey.replace('04', '');
+    const x = Buffer.from(pubKeyNoPrefix.substring(0, 64), 'hex').toString(
+      'base64url'
+    );
+    const y = Buffer.from(pubKeyNoPrefix.substring(64, 128), 'hex').toString(
+      'base64url'
+    );
+
+    const ecJwk: EcJwk = {
+      kty: 'EC',
+      x,
+      y,
+      crv: 'P-256'
+    };
+    console.log(ecJwk);
+    const ecJwkAttribute: IJwkEcAttribute = {
+      did: attribute.did,
+      ecJwk,
+      validDays: attribute.validDays,
+      relation: attribute.relation
+    };
+    const r: INewJwkAttributeCreationResponse = {
+      ...(await this.addEcJwkAttribute(ecJwkAttribute)),
+      jwk: ecJwk
+    };
+    return r;
+  }
+
   async addRsaJwkAttribute(jwkRsaAttribute: IJwkRsaAttribute): Promise<any> {
     // TODO: validate RSA params
     const { kty } = jwkRsaAttribute.rsaJwk;

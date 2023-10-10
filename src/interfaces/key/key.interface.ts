@@ -4,4 +4,6 @@ export interface IECKey {
   address: string;
   publicKey: string;
   type: string;
+  x?: string;
+  y?: string;
 }

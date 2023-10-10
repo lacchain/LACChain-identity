@@ -5402,10 +5402,10 @@ koa@^2.8.2:
     type-is "^1.6.16"
     vary "^1.1.2"
 
-lacchain-key-manager@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/lacchain-key-manager/-/lacchain-key-manager-0.0.2.tgz#e9996ad66bdbf52e4db3148390a09dff630413b7"
-  integrity sha512-8qDeQUYHgZylcPQDkKc3N6eprVUlp0vCH+4GsH+iznZ6HlWhhdghMgEgYwSq1jlmM9L/jBos+m7m1iWBDWoQbg==
+lacchain-key-manager@^0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/lacchain-key-manager/-/lacchain-key-manager-0.0.6.tgz#2d4c3bd175ab11332a7f4657d70438ee47bf7f18"
+  integrity sha512-RRuazKwiLniOuGE/PmriZqjXbOjBYIe9a1vxCCHeJGnVs6mVp3dD9MnDArszUd+xiJLL4L9CLa0hzTOYZjXOhA==
   dependencies:
     "@lacchain/gas-model-provider" "^1.0.1"
     DIDComm-js "git+https://github.com/decentralized-identity/DIDComm-js.git"
