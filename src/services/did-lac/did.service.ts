@@ -428,7 +428,7 @@ export abstract class DidService implements DidLacService {
       did: jwkAttribute.did,
       relation: jwkAttribute.relation,
       algorithm: 'jwk',
-      encodingMethod: 'hex',
+      encodingMethod: 'json',
       value: toUtf8Bytes(canonicalize(jwkAttribute.jwk)),
       revokeDeltaTime: jwkAttribute.revokeDeltaTime,
       compromised: jwkAttribute.compromised
