@@ -81,7 +81,7 @@
     "ethers": "^5.6.5",
     "express": "^4.17.3",
     "express-formidable": "^1.2.0",
-    "express-rate-limit": "^6.3.0",
+    "express-rate-limit": "^6.7.1",
     "helmet": "^5.0.2",
     "json-canonicalize": "^1.0.6",
     "jsonwebtoken": "^9.0.0",
